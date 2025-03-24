@@ -40,15 +40,21 @@ class LoaderScene extends Phaser.Scene {
     this.load.spritesheet('player', '/assets/Necromancer/Idle/spr_NecromancerIdle_strip50.png', { frameWidth: 4800/50, frameHeight: 96 });
     this.load.spritesheet('walk', '/assets/Necromancer/Walk/spr_NecromancerWalk_strip10.png', { frameWidth: 960/10, frameHeight: 96 });  
     this.load.spritesheet('spawn', '/assets/Necromancer/Spawn/spr_NecromancerSpawn_strip20.png', { frameWidth: 2560/20, frameHeight: 128 });  
-    
+    this.load.spritesheet('death', '/assets/Necromancer/Death/spr_NecromancerDeath_strip52.png', { frameWidth: 4992/52, frameHeight: 96 });  
+
     this.load.spritesheet('skeleton', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Idle.png', { frameWidth: 768/8, frameHeight: 64 });
-    this.load.spritesheet('skeletonwalk', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Walk.png', { frameWidth: 960/10, frameHeight: 64 });  
+    this.load.spritesheet('skeleton-walk', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Walk.png', { frameWidth: 960/10, frameHeight: 64 });  
     this.load.spritesheet('skeleton-attack', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Attack1.png', { frameWidth: 960/10, frameHeight: 64 });
+    this.load.spritesheet('skeleton-death', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Die.png', { frameWidth: 1248/13, frameHeight: 64 });
+  
+    this.load.spritesheet('projectile', 'assets/Effect_and_FX_Pixel_Part_12_Free/Effect and FX Pixel Part 12 Free/579.png', { frameWidth: 896/14, frameHeight: 576/9 });
   }
 
   create() {
     // Cuando se haya cargado, pasar a la siguiente escena
-    this.scene.start('GameScene');
+    setTimeout(() => {
+      this.scene.start('GameScene');
+    } , 1000); // Espera 1 segundo antes de iniciar la siguiente escena
   }
 }
 

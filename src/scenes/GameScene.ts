@@ -1,10 +1,12 @@
 import * as Phaser from 'phaser';
 import Player from '../GameObjects/Player';
 import Skeleton from '@/GameObjects/Skeleton';
+import Projectile from '@/GameObjects/Projectile';
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
   skeletonGroup: Phaser.Physics.Arcade.Group | undefined;
+  projectiles: Phaser.Physics.Arcade.Group | undefined;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -13,10 +15,28 @@ class GameScene extends Phaser.Scene {
   create() {
     this.physics.world.setBounds(0, 0, window.innerWidth * 4, window.innerHeight * 4);
     this.createBg();
-    this.skeletonGroup = this.physics.add.group();
     this.player = new Player(this, this.physics.world.bounds.width/2, this.physics.world.bounds.height/2, 'player');
+    this.skeletonGroup = this.physics.add.group();
+    this.projectiles = this.physics.add.group();
+    new Skeleton(this, this.physics.world.bounds.width/2 + 100, this.physics.world.bounds.height/2 + 100, 'skeleton', this.skeletonGroup);
+    new Skeleton(this, this.physics.world.bounds.width/2 + 200, this.physics.world.bounds.height/2 + 100, 'skeleton', this.skeletonGroup);
+    this.skeletonGroup.runChildUpdate = true;
+    this.physics.add.collider(this.skeletonGroup, this.skeletonGroup);
+    //disable rules for skeletons
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const testSkeleton = new Skeleton(this, this.physics.world.bounds.width/2 + 100, this.physics.world.bounds.height/2 + 100, 'skeleton', this.skeletonGroup);
+    
+    new Array(10).fill(0).forEach(() => {
+      const x = Phaser.Math.Between(
+        this.player.x - window.innerWidth / 2,
+        this.player.x + window.innerWidth / 2
+      );
+      const y = Phaser.Math.Between(
+        this.player.y - window.innerHeight / 2,
+        this.player.y + window.innerHeight / 2
+      );
+  
+      new Skeleton(this, x, y, 'skeleton', this.skeletonGroup!);
+    });
     this.cameras.main.startFollow(this.player, false, 0.5, 0.5);
   }
 
@@ -31,6 +51,7 @@ class GameScene extends Phaser.Scene {
         bounds.width + window.innerWidth * 2,  // Aumentar el ancho de la máscara
         bounds.height + window.innerHeight * 2 // Aumentar la altura de la máscara
       );
+      
   }
 
   createTileGrid(width: number, height: number, tileWidth: number, texture: string) {
@@ -43,26 +64,21 @@ class GameScene extends Phaser.Scene {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  update(time: number, delta: number) {
-    if (this.player.canMove) {
-      const pointer = this.input.activePointer;
-      const pointerWorldPos = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-  
-      const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, pointerWorldPos.x, pointerWorldPos.y);
-      if (distance > 100) {
-        this.physics.moveToObject(this.player, pointerWorldPos, 120);
-        if (pointerWorldPos.x < this.player.x) {
-          this.player.setFlipX(true);
-        } else {
-          this.player.setFlipX(false);
-        }
-        this.player.walk();
-      } else {
-        (this.player.body as Phaser.Physics.Arcade.Body).setVelocity(0);
-        this.player.idle();
-      }
+  setupColliders() {
+    if (this.skeletonGroup) {
+      this.skeletonGroup.runChildUpdate = true;
+      this.physics.add.collider(this.skeletonGroup, this.skeletonGroup, () => {});
     }
+    this.physics.add.collider(this.player, this.skeletonGroup!, () => {});
+    this.physics.add.collider(this.projectiles!, this.skeletonGroup!, (projectile) => {
+      const proj = projectile as Projectile;
+      proj.onHitTarget();
+    });
+  }
+
+  update(time: number, delta: number) {
+    super.update(time, delta);
+    this.setupColliders();
   }
 }
 

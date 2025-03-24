@@ -3,13 +3,15 @@
 .container {
     text-align: center;
     padding: 50px;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    background: linear-gradient(135deg, #7b7554 0%, #232218 100%);
     height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: #fff;
+    color: #797562;
+    background-image: url('/assets/hand_painted_black_watercolour_background_0407.jpg');
+    gap: 10vh;
   }
   
   .heading {
@@ -20,7 +22,7 @@
   }
   
   .button {
-    background-color: #ff6f61;
+    background-color: #29298a;
     color: #fff;
     border: none;
     padding: 15px 30px;

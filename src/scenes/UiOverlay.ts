@@ -4,6 +4,7 @@ class UIOverlay extends Phaser.Scene {
     private healthBar!: Phaser.GameObjects.Graphics;
     private scoreText!: Phaser.GameObjects.Text;
     private playerHealth: number = 100;
+    private gameOverModal!: Phaser.GameObjects.Container;
 
     constructor() {
         super({ key: 'UIOverlay', active: true });
@@ -22,6 +23,7 @@ class UIOverlay extends Phaser.Scene {
 
         // Subscribe to the global event emitter
         this.game.events.on('update-health', this.handleHealthUpdate, this);
+        this.game.events.on('game-over-modal', this.showGameOverModal, this); // Listen for the game-over-modal event
 
         // Make UI responsive to window resizing and camera movement
         this.scale.on('resize', this.resizeUI, this);
@@ -29,6 +31,9 @@ class UIOverlay extends Phaser.Scene {
 
         this.resizeUI(); // Initial UI setup
         this.updateUIPosition(); // Initial position based on camera
+
+        // Create the modal (hidden by default)
+        this.createGameOverModal();
     }
 
     handleHealthUpdate(health: number) {
@@ -72,6 +77,44 @@ class UIOverlay extends Phaser.Scene {
         if (this.playerHealth > 0) {
             this.healthBar.fillRect(10, 10, healthBarWidth * (this.playerHealth / 100), healthBarHeight);
         }
+    }
+
+    // Create a hidden modal for game-over
+    createGameOverModal() {
+        const { width } = this.cameras.main;
+
+        // Modal background
+        const modalBackground = this.add.graphics();
+        modalBackground.fillStyle(0x000000, 0.8); // Black background with transparency
+        modalBackground.fillRoundedRect(-150, -75, 400, 150, 20); // Rounded rectangle
+
+        // Modal text
+        const modalText = this.add.text(-120, -40, 'Perdiste pajero! \n ;D', {
+            fontSize: '32px',
+            color: '#ffffff',
+        });
+
+        // Create the container (hidden initially)
+        this.gameOverModal = this.add.container(width / 2, -150, [modalBackground, modalText]);
+        this.gameOverModal.setDepth(10); // Ensure modal is on top
+        this.gameOverModal.setVisible(false);
+    }
+
+    // Show game-over modal with bounce tween
+    showGameOverModal() {
+        const { width, height } = this.cameras.main;
+
+        // Set the modal visible and start it from above the screen
+        this.gameOverModal.setVisible(true);
+        this.gameOverModal.setPosition(width / 2, -150);
+
+        // Tween to animate the modal with a bounce effect from top to center
+        this.tweens.add({
+            targets: this.gameOverModal,
+            y: height / 2,
+            ease: 'Bounce.easeOut',
+            duration: 1000,
+        });
     }
 }
 
