@@ -2,11 +2,14 @@ import * as Phaser from 'phaser';
 import Player from '../GameObjects/Player';
 import Skeleton from '@/GameObjects/Skeleton';
 import Projectile from '@/GameObjects/Projectile';
+import Enemy from '@/GameObjects/Enemy';
 
-class GameScene extends Phaser.Scene {
-  private player!: Player;
-  skeletonGroup: Phaser.Physics.Arcade.Group | undefined;
+export class GameScene extends Phaser.Scene {
+  player!: Player;
+  enemiesGroup: Phaser.Physics.Arcade.Group | undefined;
   projectiles: Phaser.Physics.Arcade.Group | undefined;
+  canWin: boolean = true; // Variable para controlar si se puede ganar
+  spawnTimer?: Phaser.Time.TimerEvent;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -15,29 +18,62 @@ class GameScene extends Phaser.Scene {
   create() {
     this.physics.world.setBounds(0, 0, window.innerWidth * 4, window.innerHeight * 4);
     this.createBg();
-    this.player = new Player(this, this.physics.world.bounds.width/2, this.physics.world.bounds.height/2, 'player');
-    this.skeletonGroup = this.physics.add.group();
+    this.player = new Player(this, this.physics.world.bounds.width / 2, this.physics.world.bounds.height / 2, 'player');
+    this.enemiesGroup = this.physics.add.group();
     this.projectiles = this.physics.add.group();
-    new Skeleton(this, this.physics.world.bounds.width/2 + 100, this.physics.world.bounds.height/2 + 100, 'skeleton', this.skeletonGroup);
-    new Skeleton(this, this.physics.world.bounds.width/2 + 200, this.physics.world.bounds.height/2 + 100, 'skeleton', this.skeletonGroup);
-    this.skeletonGroup.runChildUpdate = true;
-    this.physics.add.collider(this.skeletonGroup, this.skeletonGroup);
-    //disable rules for skeletons
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    
-    new Array(10).fill(0).forEach(() => {
-      const x = Phaser.Math.Between(
-        this.player.x - window.innerWidth / 2,
-        this.player.x + window.innerWidth / 2
-      );
-      const y = Phaser.Math.Between(
-        this.player.y - window.innerHeight / 2,
-        this.player.y + window.innerHeight / 2
-      );
-  
-      new Skeleton(this, x, y, 'skeleton', this.skeletonGroup!);
+    this.enemiesGroup.runChildUpdate = true;
+    this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
+
+    this.spawnTimer = this.time.addEvent({
+      delay: 3000,
+      loop: true,
+      callback: () => {
+        const x = Phaser.Math.Between(
+          this.player.x - window.innerWidth / 2,
+          this.player.x + window.innerWidth / 2
+        );
+        const y = Phaser.Math.Between(
+          this.player.y - window.innerHeight / 2,
+          this.player.y + window.innerHeight / 2
+        );
+
+        new Skeleton(this, x, y, 'skeleton', this.enemiesGroup!);
+      }
+    });
+    this.events.on('level-up', () => {
+      const minDelay = 500;
+      const maxDelay = 1500;
+      const lvl = Math.min(this.player.lvl, 15);
+      const newDelay = maxDelay - ((maxDelay - minDelay) * (lvl - 1) / (15 - 1));
+      if (this.spawnTimer) {
+        this.spawnTimer.remove(false);
+      }
+      this.spawnTimer = this.time.addEvent({
+        delay: newDelay,
+        loop: true,
+        callback: () => {
+          for (let i = 0; i < this.player.lvl; i++) {
+              const spawnX = Phaser.Math.Between(
+                this.player.x - window.innerWidth / 2,
+                this.player.x + window.innerWidth / 2
+              );
+              const spawnY = Phaser.Math.Between(
+                this.player.y - window.innerHeight / 2,
+                this.player.y + window.innerHeight / 2
+              );
+            new Skeleton(this, spawnX, spawnY, 'skeleton', this.enemiesGroup!);
+            }
+        }
+      });
+      console.log(`Spawn delay updated to ${newDelay}ms for level ${this.player.lvl}`);
     });
     this.cameras.main.startFollow(this.player, false, 0.5, 0.5);
+    this.setupColliders();
+
+    this.game.events.on('game-over', () => {
+      this.spawnTimer?.remove(false);
+      this.killEnemies();
+    });
   }
 
   createBg() {
@@ -64,21 +100,47 @@ class GameScene extends Phaser.Scene {
     }
   }
 
-  setupColliders() {
-    if (this.skeletonGroup) {
-      this.skeletonGroup.runChildUpdate = true;
-      this.physics.add.collider(this.skeletonGroup, this.skeletonGroup, () => {});
+  killEnemies() {
+    if (this.enemiesGroup) {
+      this.enemiesGroup.getChildren().forEach((enemy) => {
+        const enemyObj = enemy as Enemy;
+        enemyObj.die();
+        console.log('Enemy defeated:', enemyObj);
+      });
     }
-    this.physics.add.collider(this.player, this.skeletonGroup!, () => {});
-    this.physics.add.collider(this.projectiles!, this.skeletonGroup!, (projectile) => {
+  }
+
+  setupColliders() {
+    if (this.enemiesGroup) {
+      this.enemiesGroup.runChildUpdate = true;
+      this.physics.add.collider(this.enemiesGroup, this.enemiesGroup, () => {});
+    }
+    this.physics.add.collider(this.player, this.enemiesGroup!, () => {});
+    this.physics.add.collider(this.projectiles!, this.enemiesGroup!, (projectile, enemy) => {
+      console.log('hit', projectile, enemy);
       const proj = projectile as Projectile;
-      proj.onHitTarget();
+      const enemyObj = enemy as Enemy;
+      proj.onHitTarget(enemyObj);
     });
   }
 
   update(time: number, delta: number) {
     super.update(time, delta);
-    this.setupColliders();
+    if (this.canWin && this.enemiesGroup ) {
+      if (this.player.lvl >= 15) {
+        this.spawnTimer?.remove(false);
+        this.killEnemies();
+        this.canWin = false; // Reset canWin to prevent multiple win events
+        this.game.events.emit('game-win');
+        this.player.idle();
+        this.player.canMove = false;
+        this.player.setVelocity(0);
+        console.log('ganaste');
+      }
+    }
+    // if () {
+    //   this.game.events.emit('game-win');
+    // }
   }
 }
 

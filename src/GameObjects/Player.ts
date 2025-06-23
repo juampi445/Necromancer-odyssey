@@ -1,5 +1,7 @@
 import * as Phaser from 'phaser';
-import Projectile from './Projectile'; // Import the new Projectile class
+// import Projectile from './Projectile'; // Import the new Projectile class
+import Skill from './Skill';
+import { Comet, Comet2 } from './Skills';
 
 class Player extends Phaser.Physics.Arcade.Sprite {
   canMove: boolean;
@@ -8,6 +10,9 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   dead: boolean = false;
   isAttacking: boolean = false;
   projectiles?: Phaser.GameObjects.Group;
+  skills: Skill[]; // Lista de habilidades
+  experience: number = 0; // Experiencia del jugador
+  lvl: number = 1; // Nivel del jugador
 
   constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
     super(scene, x, y, texture);
@@ -23,6 +28,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true); // El jugador no podrá salir de los límites del mundo
     this.canMove = false; // Inicialmente, el jugador no puede moverse
     this.create();
+    this.skills = [
+      new Comet(scene, this), // Primera habilidad
+       // Segunda habilidad
+      // Podrías agregar más habilidades aquí
+    ];
   }
 
   create() {
@@ -90,6 +100,87 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     });
   }
 
+  addExperience(amount: number) {
+    this.experience += amount; // Aumentar la experiencia del jugador
+    if (this.experience >= (100 * Math.ceil(Math.pow(1.5, this.lvl - 1)))) {
+      console.log('Nivel alcanzado! Experiencia actual:', this.experience);
+      this.experience = 0; // Reiniciar experiencia al alcanzar 100
+      this.levelUp(); // Llamar a la función de nivelación
+    }
+    this.scene.game.events.emit('update-experience', this.experience, this.lvl); // Emitir un evento para actualizar la experiencia
+  }
+
+  levelUp() {
+    console.log('Nivel aumentado! Salud actual:', this.health);
+    this.lvl += 1; // Aumentar el nivel del jugador
+    this.skills.push(new Comet(this.scene, this)); // Añadir una nueva habilidad al alcanzar el nivel 2
+    if (this.lvl > 5) this.skills.push(new Comet2(this.scene, this)); // Añadir una nueva habilidad al alcanzar el nivel 2
+    this.skills.forEach(skill => {
+      skill.cooldown = Math.max(200, skill.cooldown - this.lvl * 10); // Reducir el cooldown de todas las habilidades, mínimo 200
+      skill.damage = this.lvl * 10 // Aumentar el daño de todas las habilidades, máximo 50
+      console.log(`Habilidad ${skill.constructor.name} cooldown reducido a ${skill.cooldown} y daño aumentado a ${skill.damage}`);
+    }
+    ); // Reducir el cooldown de todas las habilidades al alcanzar un nuevo nivel
+    // if (this.lvl === 3) {
+    //   this.skills.push(new Comet(this.scene, this));
+    //   this.skills.push(new Comet(this.scene, this));
+    //   this.skills.push(new Comet(this.scene, this));
+    //   this.skills.push(new Comet(this.scene, this));
+    //   this.skills.push(new Comet(this.scene, this));
+
+    //   // this.skills.push(new Comet2(this.scene, this));
+    // } // Añadir una nueva habilidad al alcanzar el nivel 4
+    // if (this.lvl === 6) {
+    //   const comet = this.skills.filter(skill => skill instanceof Comet); // Filtrar habilidades para mantener solo Comet2
+    //   this.skills.push(new Comet(this.scene, this));
+    //   this.skills.push(new Comet(this.scene, this));
+    //   this.skills.push(new Comet(this.scene, this));
+    //   this.skills.push(new Comet(this.scene, this));
+
+    //   comet.map(cometSkill => {
+    //     cometSkill.cooldown = 600; // Reducir el cooldown de la primera habilidad        
+    //     });
+    // } // Reducir el cooldown de la primera habilidad al alcanzar el nivel 7
+    // if (this.lvl === 9) {
+    //   this.skills.push(new Comet2(this.scene, this));
+    //   this.skills.push(new Comet2(this.scene, this));
+    //   this.skills.push(new Comet2(this.scene, this));
+    //   this.skills.push(new Comet2(this.scene, this));
+    //   this.skills.push(new Comet2(this.scene, this));
+
+    //   const comet = this.skills.filter(skill => skill instanceof Comet); // Filtrar habilidades para mantener solo Comet2
+    //   const comet2 = this.skills.filter(skill => skill instanceof Comet2); // Filtrar habilidades para mantener solo Comet2
+
+    //    comet.map(cometSkill => {
+    //     cometSkill.cooldown = 200; // Reducir el cooldown de la primera habilidad        
+    //     });
+    //     comet2.map(cometSkill => {
+    //     cometSkill.cooldown = 800; // Reducir el cooldown de la primera habilidad        
+    //     });
+    // }
+    // if (this.lvl === 12) {
+    //    this.skills.push(new Comet(this.scene, this));
+    //   this.skills.push(new Comet(this.scene, this));
+    //   this.skills.push(new Comet(this.scene, this));
+    //    this.skills.push(new Comet(this.scene, this));
+    //   this.skills.push(new Comet(this.scene, this));
+    //   this.skills.push(new Comet(this.scene, this));
+    //    this.skills.push(new Comet2(this.scene, this));
+    //   this.skills.push(new Comet2(this.scene, this));
+    //   this.skills.push(new Comet2(this.scene, this));
+    //     const comet = this.skills.filter(skill => skill instanceof Comet); // Filtrar habilidades para mantener solo Comet2
+    //   const comet2 = this.skills.filter(skill => skill instanceof Comet2); // Filtrar habilidades para mantener solo Comet2
+
+    //    comet.map(cometSkill => {
+    //     cometSkill.cooldown = 100; // Reducir el cooldown de la primera habilidad        
+    //     });
+    //     comet2.map(cometSkill => {
+    //     cometSkill.cooldown = 400; // Reducir el cooldown de la primera habilidad        
+    //     });
+    // }
+    this.scene.events.emit('level-up', this.lvl); // Emitir un evento de nivelación
+  }
+
   takeDamage(damage: number) {
     this.takingDamage = true; // Marcar al jugador como recibiendo daño
     this.setTint(0xff0000); // Cambiar el color del jugador a rojo
@@ -113,42 +204,9 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   preUpdate(time: number, delta: number) {
+    super.preUpdate(time, delta);
     this.update();
-    this.anims.update(time, delta);
-  }
-
-  attack() {
-    if (!this.scene) {
-      console.error('La escena no está disponible para el jugador');
-      return;
-    }
-    if (this.dead) return; // No atacar si el jugador está muerto
-    // Obtener los enemigos más cercanos
-    // @ts-expect-error: skeletonGroup is not typed but is expected to exist in the scene
-    const enemies = this.scene.skeletonGroup.getChildren().filter((enemy: Phaser.Physics.Arcade.Sprite) => {
-      const distance = Phaser.Math.Distance.Between(this.x, this.y, enemy.x, enemy.y);
-      return distance <= 300;
-    });
-
-    if (enemies.length === 0) return;
-
-    // Seleccionar el enemigo más cercano
-    const nearestEnemy = enemies.reduce((nearest: Phaser.Physics.Arcade.Sprite, enemy: Phaser.Physics.Arcade.Sprite) => {
-      const distanceToCurrentEnemy = Phaser.Math.Distance.Between(this.x, this.y, enemy.x, enemy.y);
-      const distanceToNearestEnemy = Phaser.Math.Distance.Between(this.x, this.y, nearest.x, nearest.y);
-      return distanceToCurrentEnemy < distanceToNearestEnemy ? enemy : nearest;
-    });
-
-    // Crear un nuevo proyectil y apuntarlo al enemigo más cercano
-    const projectile = new Projectile(this.scene, this.x, this.y, nearestEnemy);
-
-    // Añadir el proyectil a un grupo
-    if (!this.projectiles) {
-      this.projectiles = this.scene.add.group();
-    }
-    this.projectiles.add(projectile);
-
-    console.log('Atacando al enemigo más cercano');
+    this.skills.forEach(skill => skill.update());
   }
 
   move() {
@@ -179,14 +237,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.health <= 0 && !this.dead) {
       this.dead = true;
       this.death();
-    }
-
-    if (this.isAttacking) {
-      this.isAttacking = false;
-      setTimeout(() => {
-        this.attack();
-        this.isAttacking = true;
-      }, 2000);
     }
   }
 }

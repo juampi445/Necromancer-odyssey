@@ -47,7 +47,8 @@ class LoaderScene extends Phaser.Scene {
     this.load.spritesheet('skeleton-attack', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Attack1.png', { frameWidth: 960/10, frameHeight: 64 });
     this.load.spritesheet('skeleton-death', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Die.png', { frameWidth: 1248/13, frameHeight: 64 });
   
-    this.load.spritesheet('projectile', 'assets/Effect_and_FX_Pixel_Part_12_Free/Effect and FX Pixel Part 12 Free/579.png', { frameWidth: 896/14, frameHeight: 576/9 });
+    this.load.spritesheet('comet', 'assets/Effect_and_FX_Pixel_Part_12_Free/Effect and FX Pixel Part 12 Free/579.png', { frameWidth: 896/14, frameHeight: 576/9 });
+    this.load.spritesheet('comet_2', 'assets/Effect_and_FX_Pixel_Part_12_Free/Effect and FX Pixel Part 12 Free/567.png', { frameWidth: 832/13, frameHeight: 576/9 });
   }
 
   create() {

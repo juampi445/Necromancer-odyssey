@@ -2,115 +2,143 @@ import * as Phaser from 'phaser';
 
 class UIOverlay extends Phaser.Scene {
     private healthBar!: Phaser.GameObjects.Graphics;
-    private scoreText!: Phaser.GameObjects.Text;
     private playerHealth: number = 100;
-    private gameOverModal!: Phaser.GameObjects.Container;
+
+    private expBar!: Phaser.GameObjects.Graphics;
+    private expText!: Phaser.GameObjects.Text;
+    private levelText!: Phaser.GameObjects.Text;
+    private experience: number = 0;
+    private level: number = 1;
+
+    private modal!: Phaser.GameObjects.Container;
+    private modalBackground!: Phaser.GameObjects.Graphics;
+    private modalText!: Phaser.GameObjects.Text;
 
     constructor() {
         super({ key: 'UIOverlay', active: true });
     }
 
     create() {
-        // Add health bar (a simple green rectangle)
+        // Health bar
         this.healthBar = this.add.graphics();
-        this.updateHealthBar(); // Initial health at 100%
+        this.updateHealthBar();
 
-        // Add score text
-        this.scoreText = this.add.text(10, 50, 'Score: 0', {
+        // Experience bar
+        this.expBar = this.add.graphics();
+        this.expText = this.add.text(0, 0, '', {
+            fontSize: '18px',
+            color: '#ffffff',
+        });
+        this.levelText = this.add.text(0, 0, '', {
             fontSize: '24px',
             color: '#ffffff',
         });
+        this.updateExpBar();
 
-        // Subscribe to the global event emitter
+        // Events
         this.game.events.on('update-health', this.handleHealthUpdate, this);
-        this.game.events.on('game-over-modal', this.showGameOverModal, this); // Listen for the game-over-modal event
+        this.game.events.on('update-experience', this.handleExpUpdate, this);
+        this.game.events.on('game-win', () => this.showModal("win"), this);
+        this.game.events.on('game-over', () => this.showModal("lose"), this);
 
-        // Make UI responsive to window resizing and camera movement
         this.scale.on('resize', this.resizeUI, this);
         this.cameras.main.on('cameraupdate', this.updateUIPosition, this);
 
-        this.resizeUI(); // Initial UI setup
-        this.updateUIPosition(); // Initial position based on camera
+        this.createModal();
 
-        // Create the modal (hidden by default)
-        this.createGameOverModal();
+        this.resizeUI();
+        this.updateUIPosition();
     }
 
     handleHealthUpdate(health: number) {
-        console.log('Health updated:', health);
         this.playerHealth = health;
         this.updateHealthBar();
     }
 
-    resizeUI() {
-        this.updateHealthBar(); // Re-draw the health bar on resize
-    }
-
-    updateUIPosition() {
-        const camera = this.cameras.main;
-        const cameraLeft = camera.scrollX;
-        const cameraTop = camera.scrollY;
-
-        const healthBarWidth = camera.width * 0.5;
-        const healthBarHeight = 20;
-
-        this.healthBar.clear();
-        this.healthBar.fillStyle(0x00ff00); // Green color for health
-        this.healthBar.fillRect(cameraLeft + 10, cameraTop + 10, healthBarWidth, healthBarHeight);
-
-        this.scoreText.setPosition(cameraLeft + 10, cameraTop + 50);
+    handleExpUpdate(newExp: number, lvl: number) {
+        this.experience = newExp;
+        this.level = lvl;
+        console.log('Experience updated:', this.experience, 'Level:', this.level);
+        this.updateExpBar();
     }
 
     updateHealthBar() {
         const camera = this.cameras.main;
-        const healthBarWidth = camera.width * 0.4;
-        const healthBarHeight = 20;
-
+        const width = camera.width * 0.4;
         this.healthBar.clear();
-
-        // Draw the red background for lost health
-        this.healthBar.fillStyle(0xff0000); // Red color for lost health
-        this.healthBar.fillRect(10, 10, healthBarWidth, healthBarHeight);
-
-        // Draw the green foreground for remaining health
-        this.healthBar.fillStyle(0x00ff00); // Green color for remaining health
+        this.healthBar.fillStyle(0xff0000);
+        this.healthBar.fillRect(10, 10, width, 20);
         if (this.playerHealth > 0) {
-            this.healthBar.fillRect(10, 10, healthBarWidth * (this.playerHealth / 100), healthBarHeight);
+            this.healthBar.fillStyle(0x00ff00);
+            this.healthBar.fillRect(10, 10, width * (this.playerHealth / 100), 20);
         }
     }
 
-    // Create a hidden modal for game-over
-    createGameOverModal() {
+    updateExpBar() {
+        const camera = this.cameras.main;
+        const barWidth = camera.width * 0.3;
+        const barHeight = 24;
+
+        const x = camera.scrollX + camera.width - barWidth - 20;
+        const y = camera.scrollY + 10;
+
+        const expInLevel = this.experience % (100 * Math.ceil(Math.pow(1.5, this.level - 1))); // Assuming each level requires 100 * level * 2 XP
+        const ratio = expInLevel / (100 * Math.ceil(Math.pow(1.5, this.level - 1)));
+        const nextLevelXP = 100 * Math.ceil(Math.pow(1.5, this.level - 1));
+
+        // Redraw bar
+        this.expBar.clear();
+        this.expBar.fillStyle(0x222222);
+        this.expBar.fillRoundedRect(x, y, barWidth, barHeight, 8);
+        this.expBar.fillStyle(0x00aaff);
+        this.expBar.fillRoundedRect(x, y, barWidth * ratio, barHeight, 8);
+
+        // XP text inside the bar
+        this.expText.setText(`XP: ${this.experience} / ${nextLevelXP}`);
+        this.expText.setPosition(x + 10, y + 2);
+
+        // Level text beside the bar
+        this.levelText.setText(`Lv. ${this.level}`);
+        this.levelText.setPosition(x, y + barHeight + 5);
+    }
+
+    resizeUI() {
+        this.updateHealthBar();
+        this.updateExpBar();
+        this.updateUIPosition();
+    }
+
+    updateUIPosition() {
+        this.updateHealthBar();
+        this.updateExpBar();
+    }
+
+    createModal() {
         const { width } = this.cameras.main;
 
-        // Modal background
-        const modalBackground = this.add.graphics();
-        modalBackground.fillStyle(0x000000, 0.8); // Black background with transparency
-        modalBackground.fillRoundedRect(-150, -75, 400, 150, 20); // Rounded rectangle
+        this.modalBackground = this.add.graphics();
+        this.modalBackground.fillStyle(0x000000, 0.8);
+        this.modalBackground.fillRoundedRect(-150, -75, 400, 150, 20);
 
-        // Modal text
-        const modalText = this.add.text(-120, -40, 'Perdiste pajero! \n ;D', {
+        this.modalText = this.add.text(-120, -40, '', {
             fontSize: '32px',
             color: '#ffffff',
         });
 
-        // Create the container (hidden initially)
-        this.gameOverModal = this.add.container(width / 2, -150, [modalBackground, modalText]);
-        this.gameOverModal.setDepth(10); // Ensure modal is on top
-        this.gameOverModal.setVisible(false);
+        this.modal = this.add.container(width / 2, -150, [this.modalBackground, this.modalText]);
+        this.modal.setDepth(10);
+        this.modal.setVisible(false);
     }
 
-    // Show game-over modal with bounce tween
-    showGameOverModal() {
+    showModal(key: string) {
         const { width, height } = this.cameras.main;
 
-        // Set the modal visible and start it from above the screen
-        this.gameOverModal.setVisible(true);
-        this.gameOverModal.setPosition(width / 2, -150);
+        this.modalText.setText(key === 'win' ? 'Ganaste! \n ;D' : 'Perdiste \n ;D');
+        this.modal.setVisible(true);
+        this.modal.setPosition(width / 2, -150);
 
-        // Tween to animate the modal with a bounce effect from top to center
         this.tweens.add({
-            targets: this.gameOverModal,
+            targets: this.modal,
             y: height / 2,
             ease: 'Bounce.easeOut',
             duration: 1000,

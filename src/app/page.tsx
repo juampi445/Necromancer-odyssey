@@ -11,17 +11,22 @@ const Home: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true); // Set the state to true when the component is mounted
+    setIsClient(true); // Ensure the component is mounted on the client
   }, []);
 
   const handleStartGame = (started: boolean) => {
     setGameStarted(started);
   };
 
+  if (!isClient) {
+    // Return null to avoid server-client mismatch during hydration
+    return null;
+  }
+
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100vw', background: 'lightgrey' }}>
       {!gameStarted && <StartMenu onStart={() => handleStartGame(true)} />}
-      {gameStarted && isClient && <GameCanvas onGoBack={() => handleStartGame(false)} />}
+      {gameStarted && <GameCanvas onGoBack={() => handleStartGame(false)} />}
     </div>
   );
 };
