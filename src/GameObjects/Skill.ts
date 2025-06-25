@@ -11,9 +11,13 @@ class Skill extends Phaser.Physics.Arcade.Sprite {
     range: number = 300; // Rango de la habilidad
     projectileKey: string = 'comet'; // Clave del proyectil
     damage: number = 10; // Daño del proyectil
+    quantity: number = 1; // Cantidad de proyectiles a disparar
+    type: string = 'skill'; // Tipo de habilidad, por defecto 'skill'
+    areaOfEffect: boolean = false; // Indica si la habilidad es de área de efecto
 
-    constructor(scene: Phaser.Scene, player: Player, cooldown: number = 2000, range: number = 300) {
-        super(scene, 0, 0, ''); // Call super with default values or appropriate texture key
+    constructor(scene: Phaser.Scene, player: Player, cooldown: number = 2000, range: number = 300, textureKey: string = '') {
+        console.log(textureKey)
+        super(scene, 0, 0, textureKey); // Call super with default values or appropriate texture key
         this.scene = scene;
         this.player = player;
         this.cooldown = cooldown;
@@ -57,6 +61,17 @@ class Skill extends Phaser.Physics.Arcade.Sprite {
     useSkill(target: Enemy) {
         if (this.canUse()) {
             this.lastUsed = this.scene.time.now;
+            const shoot = (count = 0) => {
+                const projectile = createProjectile(this.projectileKey, this.scene, this.player.x, this.player.y, target, this.damage);
+                if (!this.player.projectiles) {
+                    this.player.projectiles = this.scene.add.group();
+                }
+                this.player.projectiles.add(projectile);
+                if (count + 1 < this.quantity) {
+                    this.scene.time.delayedCall(100, () => shoot(count + 1));
+                }
+            };
+            shoot();
             const projectile = createProjectile(this.projectileKey, this.scene, this.player.x, this.player.y, target, this.damage);
 
             if (!this.player.projectiles) {
@@ -66,16 +81,35 @@ class Skill extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
+    useAreaSkill() {
+        if (this.canUse()) {
+            this.lastUsed = this.scene.time.now;
+            const enemiesInRange = this.getEnemiesInRange();
+            if (enemiesInRange.length > 0) {
+                enemiesInRange.forEach(enemy => {
+                    enemy.takeDamage(this.damage);
+                });
+            }
+        }
+    }
+
     update() {
+        if (this.texture.key === 'aura') {
+            this.setPosition(this.player.x, this.player.y);
+        }
         if (this.canUse() && this.player.isAttacking) {
             if (!this.scene) {
                 console.error('La escena no está disponible para el jugador');
                 return;
               }
             if (this.player.dead) return; // No atacar si el jugador está muerto
-            const closestEnemy = this.getClosestEnemy();
-            if (closestEnemy) {
-                this.useSkill(closestEnemy);
+            if (this.areaOfEffect) {
+                this.useAreaSkill();
+            } else {
+                const closestEnemy = this.getClosestEnemy();
+                if (closestEnemy) {
+                    this.useSkill(closestEnemy);
+                }
             }
         }
     }

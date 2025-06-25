@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 // import Projectile from './Projectile'; // Import the new Projectile class
 import Skill from './Skill';
-import { Comet, Comet2 } from './Skills';
+import { Aura, Comet, Comet2 } from './Skills';
 
 class Player extends Phaser.Physics.Arcade.Sprite {
   canMove: boolean;
@@ -24,6 +24,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     // Configuración física
+    this.setDepth(1); // Asegurarse de que el jugador esté por encima de otros objetos
     this.setScale(1.5);
     this.setCollideWorldBounds(true); // El jugador no podrá salir de los límites del mundo
     this.canMove = false; // Inicialmente, el jugador no puede moverse
@@ -32,6 +33,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
       new Comet(scene, this), // Primera habilidad
        // Segunda habilidad
       // Podrías agregar más habilidades aquí
+      new Aura(scene, this) // Habilidad de área de efecto
     ];
   }
 
@@ -113,71 +115,14 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   levelUp() {
     console.log('Nivel aumentado! Salud actual:', this.health);
     this.lvl += 1; // Aumentar el nivel del jugador
-    this.skills.push(new Comet(this.scene, this)); // Añadir una nueva habilidad al alcanzar el nivel 2
-    if (this.lvl > 5) this.skills.push(new Comet2(this.scene, this)); // Añadir una nueva habilidad al alcanzar el nivel 2
     this.skills.forEach(skill => {
-      skill.cooldown = Math.max(200, skill.cooldown - this.lvl * 10); // Reducir el cooldown de todas las habilidades, mínimo 200
-      skill.damage = this.lvl * 10 // Aumentar el daño de todas las habilidades, máximo 50
-      console.log(`Habilidad ${skill.constructor.name} cooldown reducido a ${skill.cooldown} y daño aumentado a ${skill.damage}`);
+      skill.quantity += 1; // Aumentar la cantidad de proyectiles de cada habilidad
+      skill.damage += 5; // Aumentar el daño de cada habilidad
+    });
+    if (this.lvl === 5) {
+      this.skills.push(new Comet2(this.scene, this)); // Agregar una nueva habilidad al alcanzar el nivel 5
     }
-    ); // Reducir el cooldown de todas las habilidades al alcanzar un nuevo nivel
-    // if (this.lvl === 3) {
-    //   this.skills.push(new Comet(this.scene, this));
-    //   this.skills.push(new Comet(this.scene, this));
-    //   this.skills.push(new Comet(this.scene, this));
-    //   this.skills.push(new Comet(this.scene, this));
-    //   this.skills.push(new Comet(this.scene, this));
-
-    //   // this.skills.push(new Comet2(this.scene, this));
-    // } // Añadir una nueva habilidad al alcanzar el nivel 4
-    // if (this.lvl === 6) {
-    //   const comet = this.skills.filter(skill => skill instanceof Comet); // Filtrar habilidades para mantener solo Comet2
-    //   this.skills.push(new Comet(this.scene, this));
-    //   this.skills.push(new Comet(this.scene, this));
-    //   this.skills.push(new Comet(this.scene, this));
-    //   this.skills.push(new Comet(this.scene, this));
-
-    //   comet.map(cometSkill => {
-    //     cometSkill.cooldown = 600; // Reducir el cooldown de la primera habilidad        
-    //     });
-    // } // Reducir el cooldown de la primera habilidad al alcanzar el nivel 7
-    // if (this.lvl === 9) {
-    //   this.skills.push(new Comet2(this.scene, this));
-    //   this.skills.push(new Comet2(this.scene, this));
-    //   this.skills.push(new Comet2(this.scene, this));
-    //   this.skills.push(new Comet2(this.scene, this));
-    //   this.skills.push(new Comet2(this.scene, this));
-
-    //   const comet = this.skills.filter(skill => skill instanceof Comet); // Filtrar habilidades para mantener solo Comet2
-    //   const comet2 = this.skills.filter(skill => skill instanceof Comet2); // Filtrar habilidades para mantener solo Comet2
-
-    //    comet.map(cometSkill => {
-    //     cometSkill.cooldown = 200; // Reducir el cooldown de la primera habilidad        
-    //     });
-    //     comet2.map(cometSkill => {
-    //     cometSkill.cooldown = 800; // Reducir el cooldown de la primera habilidad        
-    //     });
-    // }
-    // if (this.lvl === 12) {
-    //    this.skills.push(new Comet(this.scene, this));
-    //   this.skills.push(new Comet(this.scene, this));
-    //   this.skills.push(new Comet(this.scene, this));
-    //    this.skills.push(new Comet(this.scene, this));
-    //   this.skills.push(new Comet(this.scene, this));
-    //   this.skills.push(new Comet(this.scene, this));
-    //    this.skills.push(new Comet2(this.scene, this));
-    //   this.skills.push(new Comet2(this.scene, this));
-    //   this.skills.push(new Comet2(this.scene, this));
-    //     const comet = this.skills.filter(skill => skill instanceof Comet); // Filtrar habilidades para mantener solo Comet2
-    //   const comet2 = this.skills.filter(skill => skill instanceof Comet2); // Filtrar habilidades para mantener solo Comet2
-
-    //    comet.map(cometSkill => {
-    //     cometSkill.cooldown = 100; // Reducir el cooldown de la primera habilidad        
-    //     });
-    //     comet2.map(cometSkill => {
-    //     cometSkill.cooldown = 400; // Reducir el cooldown de la primera habilidad        
-    //     });
-    // }
+    this.health = 100; // Aumentar la salud del jugador al subir de nivel
     this.scene.events.emit('level-up', this.lvl); // Emitir un evento de nivelación
   }
 
