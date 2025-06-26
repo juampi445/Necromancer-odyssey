@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser';
+import Skill from '../GameObjects/Skill'; // adjust path if needed
 
 class UIOverlay extends Phaser.Scene {
     private healthBar!: Phaser.GameObjects.Graphics;
@@ -40,6 +41,7 @@ class UIOverlay extends Phaser.Scene {
         this.game.events.on('update-experience', this.handleExpUpdate, this);
         this.game.events.on('game-win', () => this.showModal("win"), this);
         this.game.events.on('game-over', () => this.showModal("lose"), this);
+        this.game.events.on('open-skill-modal', this.handleSkillModal, this);
 
         this.scale.on('resize', this.resizeUI, this);
         this.cameras.main.on('cameraupdate', this.updateUIPosition, this);
@@ -58,7 +60,6 @@ class UIOverlay extends Phaser.Scene {
     handleExpUpdate(newExp: number, lvl: number) {
         this.experience = newExp;
         this.level = lvl;
-        console.log('Experience updated:', this.experience, 'Level:', this.level);
         this.updateExpBar();
     }
 
@@ -82,22 +83,19 @@ class UIOverlay extends Phaser.Scene {
         const x = camera.scrollX + camera.width - barWidth - 20;
         const y = camera.scrollY + 10;
 
-        const expInLevel = this.experience % (100 * Math.ceil(Math.pow(1.5, this.level - 1))); // Assuming each level requires 100 * level * 2 XP
+        const expInLevel = this.experience % (100 * Math.ceil(Math.pow(1.5, this.level - 1)));
         const ratio = expInLevel / (100 * Math.ceil(Math.pow(1.5, this.level - 1)));
         const nextLevelXP = 100 * Math.ceil(Math.pow(1.5, this.level - 1));
 
-        // Redraw bar
         this.expBar.clear();
         this.expBar.fillStyle(0x222222);
         this.expBar.fillRoundedRect(x, y, barWidth, barHeight, 8);
         this.expBar.fillStyle(0x00aaff);
         this.expBar.fillRoundedRect(x, y, barWidth * ratio, barHeight, 8);
 
-        // XP text inside the bar
         this.expText.setText(`XP: ${this.experience} / ${nextLevelXP}`);
         this.expText.setPosition(x + 10, y + 2);
 
-        // Level text beside the bar
         this.levelText.setText(`Lv. ${this.level}`);
         this.levelText.setPosition(x, y + barHeight + 5);
     }
@@ -143,6 +141,66 @@ class UIOverlay extends Phaser.Scene {
             ease: 'Bounce.easeOut',
             duration: 1000,
         });
+    }
+
+    private handleSkillModal(
+        skills: Skill[],
+        playerSkills: Skill[],
+        onSelect: (skillType: string, canUnlock: boolean, canUpgrade: boolean) => void
+    ) {
+        const camera = this.cameras.main;
+        const container = this.add.container(camera.midPoint.x, camera.midPoint.y).setDepth(20);
+
+        const bg = this.add.rectangle(0, 0, 400, 300, 0x222222, 0.95).setOrigin(0.5);
+        container.add(bg);
+
+        const title = this.add.text(0, -120, 'Choose a Skill', {
+            fontSize: '24px',
+            color: '#ffffff',
+            align: 'center'
+        }).setOrigin(0.5);
+        container.add(title);
+
+        let y = -60;
+
+        skills.forEach(skill => {
+            const playerSkill = playerSkills.find(s => s.type === skill.type);
+            const hasSkill = !!playerSkill;
+            console.log(`Skill: ${skill.type}, Has Skill: ${hasSkill}`);
+            const level = playerSkill?.lvl ?? 0;
+            const canUpgrade = hasSkill && level < skill.maxLevel;
+            const canUnlock = !hasSkill;
+
+            let label = `${skill.type} `;
+            if (canUnlock) {
+                label += '(Locked) - Unlock';
+            } else {
+                label += `(Level ${level}/${skill.maxLevel})`;
+                if (canUpgrade) label += ' - Upgrade';
+            }
+
+            const btn = this.add.text(0, y, label, {
+                fontSize: '18px',
+                color: canUpgrade || canUnlock ? '#0f0' : '#888',
+                backgroundColor: '#333',
+                padding: { left: 10, right: 10, top: 5, bottom: 5 }
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+            if (canUpgrade || canUnlock) {
+                btn.on('pointerdown', () => {
+                    console.log(canUnlock, canUpgrade, 'Skill: 00');
+                    onSelect(skill.type, canUnlock, canUpgrade);
+                    container.destroy(true);
+                });
+            }
+
+            container.add(btn);
+            y += 50;
+        });
+    }
+
+    shutdown() {
+        this.game.events.off('open-skill-modal', this.handleSkillModal, this);
     }
 }
 

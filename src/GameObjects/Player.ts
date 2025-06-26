@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 // import Projectile from './Projectile'; // Import the new Projectile class
 import Skill from './Skill';
-import { Aura, Comet, Comet2 } from './Skills';
+import { Comet } from './Skills';
 
 class Player extends Phaser.Physics.Arcade.Sprite {
   canMove: boolean;
@@ -33,7 +33,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
       new Comet(scene, this), // Primera habilidad
        // Segunda habilidad
       // Podrías agregar más habilidades aquí
-      new Aura(scene, this) // Habilidad de área de efecto
+      // new Aura(scene, this) // Habilidad de área de efecto
     ];
   }
 
@@ -115,14 +115,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   levelUp() {
     console.log('Nivel aumentado! Salud actual:', this.health);
     this.lvl += 1; // Aumentar el nivel del jugador
-    this.skills.forEach(skill => {
-      skill.quantity += 1; // Aumentar la cantidad de proyectiles de cada habilidad
-      skill.damage += 5; // Aumentar el daño de cada habilidad
-    });
-    if (this.lvl === 5) {
-      this.skills.push(new Comet2(this.scene, this)); // Agregar una nueva habilidad al alcanzar el nivel 5
-    }
-    this.health = 100; // Aumentar la salud del jugador al subir de nivel
+    // this.skills.forEach(skill => {
+    //   skill.quantity += 1; // Aumentar la cantidad de proyectiles de cada habilidad
+    //   skill.damage += 5; // Aumentar el daño de cada habilidad
+    // });
+    this.scene.events.emit('update-health', 100); // Emitir un evento de nivelación
     this.scene.events.emit('level-up', this.lvl); // Emitir un evento de nivelación
   }
 

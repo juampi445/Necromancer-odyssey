@@ -3,6 +3,8 @@ import Player from '../GameObjects/Player';
 import Skeleton from '@/GameObjects/Skeleton';
 import Projectile from '@/GameObjects/Projectile';
 import Enemy from '@/GameObjects/Enemy';
+import { SkillsManager } from '@/GameObjects/SkillsManager';
+import { Aura, Comet, Comet2 } from '@/GameObjects/Skills';
 
 export class GameScene extends Phaser.Scene {
   player!: Player;
@@ -10,6 +12,7 @@ export class GameScene extends Phaser.Scene {
   projectiles: Phaser.Physics.Arcade.Group | undefined;
   canWin: boolean = true; // Variable para controlar si se puede ganar
   spawnTimer?: Phaser.Time.TimerEvent;
+  skillsManager: SkillsManager | undefined; // Cambia esto al tipo correcto de tu SkillsManager
 
   constructor() {
     super({ key: 'GameScene' });
@@ -19,6 +22,7 @@ export class GameScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, window.innerWidth * 4, window.innerHeight * 4);
     this.createBg();
     this.player = new Player(this, this.physics.world.bounds.width / 2, this.physics.world.bounds.height / 2, 'player');
+    this.createSkillsManager();
     this.enemiesGroup = this.physics.add.group();
     this.projectiles = this.physics.add.group();
     this.enemiesGroup.runChildUpdate = true;
@@ -98,6 +102,17 @@ export class GameScene extends Phaser.Scene {
         image.displayHeight = tileWidth; // Mantener la relación de aspecto
       }
     }
+  }
+
+  createSkillsManager() {
+    this.skillsManager = new SkillsManager({
+      scene: this,
+      skills: [
+        new Comet(this, this.player),
+        new Comet2(this, this.player),
+        new Aura(this, this.player),
+      ]
+    });
   }
 
   killEnemies() {

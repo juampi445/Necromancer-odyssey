@@ -14,6 +14,9 @@ class Skill extends Phaser.Physics.Arcade.Sprite {
     quantity: number = 1; // Cantidad de proyectiles a disparar
     type: string = 'skill'; // Tipo de habilidad, por defecto 'skill'
     areaOfEffect: boolean = false; // Indica si la habilidad es de área de efecto
+    lvl: number = 0;
+    maxLevel: number = 5; // Nivel máximo de la habilidad
+    setRange?: (range: number) => void; // Método opcional para establecer el rango
 
     constructor(scene: Phaser.Scene, player: Player, cooldown: number = 2000, range: number = 300, textureKey: string = '') {
         console.log(textureKey)
@@ -91,6 +94,15 @@ class Skill extends Phaser.Physics.Arcade.Sprite {
                 });
             }
         }
+    }
+
+    upgrade() {
+        this.damage += 15; // Incrementa el daño de la habilidad
+        if (this.setRange) {
+            this.range += 50; // Incrementa el rango de la habilidad
+            this.setRange(this.range); // Llama al método para ajustar el rango si está definido
+        } else this.cooldown -= 100;
+        this.quantity += 2; // Incrementa la cantidad de proyectiles
     }
 
     update() {

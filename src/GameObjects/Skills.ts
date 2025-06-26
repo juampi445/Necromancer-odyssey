@@ -8,6 +8,7 @@ export class Comet extends Skill {
         this.range = 200; // Range of the skill
         this.lastUsed = 0; // Last time the skill was used
         this.type = 'AutoProjectile'; // Type of the skill
+        this.lvl = 1; // Initial level of the skill
     }
 
 }
@@ -43,6 +44,11 @@ export class Aura extends Skill {
             yoyo: true,
             repeat: -1 // Repeat indefinitely
         });
+
+        this.setRange = (range: number) => {
+            this.range = range;
+            this.adjustScaleToRange();
+        }
     }
 
     adjustScaleToRange() {
@@ -54,11 +60,5 @@ export class Aura extends Skill {
         const scaleY = diameter / frame.height;
 
         this.setScale(scaleX, scaleY);
-    }
-
-    // Si vas a cambiar el rango luego:
-    setRange(range: number) {
-        this.range = range;
-        this.adjustScaleToRange();
     }
 }
