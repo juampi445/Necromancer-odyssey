@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 // import Projectile from './Projectile'; // Import the new Projectile class
 import Skill from './Skill';
-import { Comet, Venom } from './Skills';
+import { Comet } from './Skills';
 
 class Player extends Phaser.Physics.Arcade.Sprite {
   canMove: boolean;
