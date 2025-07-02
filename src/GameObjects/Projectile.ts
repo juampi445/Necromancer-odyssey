@@ -12,6 +12,10 @@ class Projectile extends Phaser.Physics.Arcade.Sprite {
   target: Enemy;
   damage: number;
   animRange: { start: number; end: number } = { start: 0, end: 0 };
+  areaOfEffectProps?: { duration: number; range: number };
+  effectFrequency?: number; // Frequency of area effect application
+  lastUsed: number = 0; // Timestamp of the last use for area effect
+  areaEffect?: (target: Enemy) => void; // For area effect projectiles
 
   constructor(
     scene: Phaser.Scene,
@@ -61,8 +65,9 @@ class Projectile extends Phaser.Physics.Arcade.Sprite {
     });
   }
 
-  onHitTarget(enemy: Enemy) {
-    console.log('Projectile hit target:', enemy.health, this.damage);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onHitTarget(enemy: Enemy, scene?: Phaser.Scene) {
+    // console.log('Projectile hit target:', enemy.health, this.damage);
     if (enemy) enemy.takeDamage(this.damage);
     this.destroy(true);
   }

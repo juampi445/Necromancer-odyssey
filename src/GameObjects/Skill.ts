@@ -17,7 +17,8 @@ class Skill extends Phaser.Physics.Arcade.Sprite {
     lvl: number = 0;
     maxLevel: number = 5; // Nivel máximo de la habilidad
     setRange?: (range: number) => void; // Método opcional para establecer el rango
-
+    aoeRange: number = 40; // Rango del área de efecto, por defecto 40
+    
     constructor(scene: Phaser.Scene, player: Player, cooldown: number = 2000, range: number = 300, textureKey: string = '') {
         console.log(textureKey)
         super(scene, 0, 0, textureKey); // Call super with default values or appropriate texture key
@@ -65,7 +66,7 @@ class Skill extends Phaser.Physics.Arcade.Sprite {
         if (this.canUse()) {
             this.lastUsed = this.scene.time.now;
             const shoot = (count = 0) => {
-                const projectile = createProjectile(this.projectileKey, this.scene, this.player.x, this.player.y, target, this.damage);
+                const projectile = createProjectile(this.projectileKey, this.scene, this.player.x, this.player.y, target, this.damage, this.aoeRange);
                 if (!this.player.projectiles) {
                     this.player.projectiles = this.scene.add.group();
                 }
@@ -75,12 +76,12 @@ class Skill extends Phaser.Physics.Arcade.Sprite {
                 }
             };
             shoot();
-            const projectile = createProjectile(this.projectileKey, this.scene, this.player.x, this.player.y, target, this.damage);
+            // const projectile = createProjectile(this.projectileKey, this.scene, this.player.x, this.player.y, target, this.damage, this.aoeRange);
 
-            if (!this.player.projectiles) {
-                this.player.projectiles = this.scene.add.group();
-            }
-            this.player.projectiles.add(projectile);
+            // if (!this.player.projectiles) {
+            //     this.player.projectiles = this.scene.add.group();
+            // }
+            // this.player.projectiles.add(projectile);
         }
     }
 
@@ -97,12 +98,12 @@ class Skill extends Phaser.Physics.Arcade.Sprite {
     }
 
     upgrade() {
-        this.damage += 15; // Incrementa el daño de la habilidad
+        this.damage += 10; // Incrementa el daño de la habilidad
         if (this.setRange) {
-            this.range += 50; // Incrementa el rango de la habilidad
+            this.range += 20; // Incrementa el rango de la habilidad
             this.setRange(this.range); // Llama al método para ajustar el rango si está definido
         } else this.cooldown -= 100;
-        this.quantity += 2; // Incrementa la cantidad de proyectiles
+        this.quantity += 1; // Incrementa la cantidad de proyectiles
     }
 
     update() {

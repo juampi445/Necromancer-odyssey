@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 // import Projectile from './Projectile'; // Import the new Projectile class
 import Skill from './Skill';
-import { Comet } from './Skills';
+import { Comet, Venom } from './Skills';
 
 class Player extends Phaser.Physics.Arcade.Sprite {
   canMove: boolean;
@@ -34,6 +34,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
        // Segunda habilidad
       // Podrías agregar más habilidades aquí
       // new Aura(scene, this) // Habilidad de área de efecto
+      // new Venom(scene, this) // Habilidad de área de efecto
     ];
   }
 
@@ -119,7 +120,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     //   skill.quantity += 1; // Aumentar la cantidad de proyectiles de cada habilidad
     //   skill.damage += 5; // Aumentar el daño de cada habilidad
     // });
-    this.scene.events.emit('update-health', 100); // Emitir un evento de nivelación
+    this.scene.game.events.emit('update-health', 100); // Emitir un evento de nivelación
     this.scene.events.emit('level-up', this.lvl); // Emitir un evento de nivelación
   }
 

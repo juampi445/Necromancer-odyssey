@@ -8,7 +8,7 @@ class Skeleton extends Enemy {
         super(scene, x, y, texture, group);
         group.add(this);
         this.setScale(1.2);
-        this.velocity = 60;
+        this.velocity = 50;
         this.damage = 10;
         this.create();
         this.setDifficulty(scene.player.lvl);

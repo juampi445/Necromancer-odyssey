@@ -4,12 +4,13 @@ import Skeleton from '@/GameObjects/Skeleton';
 import Projectile from '@/GameObjects/Projectile';
 import Enemy from '@/GameObjects/Enemy';
 import { SkillsManager } from '@/GameObjects/SkillsManager';
-import { Aura, Comet, Comet2 } from '@/GameObjects/Skills';
+import { Aura, Comet, Comet2, Venom } from '@/GameObjects/Skills';
 
 export class GameScene extends Phaser.Scene {
   player!: Player;
   enemiesGroup: Phaser.Physics.Arcade.Group | undefined;
   projectiles: Phaser.Physics.Arcade.Group | undefined;
+  areaOfEffect: Phaser.Physics.Arcade.Group | undefined;
   canWin: boolean = true; // Variable para controlar si se puede ganar
   spawnTimer?: Phaser.Time.TimerEvent;
   skillsManager: SkillsManager | undefined; // Cambia esto al tipo correcto de tu SkillsManager
@@ -25,28 +26,37 @@ export class GameScene extends Phaser.Scene {
     this.createSkillsManager();
     this.enemiesGroup = this.physics.add.group();
     this.projectiles = this.physics.add.group();
+    this.areaOfEffect = this.physics.add.group();
     this.enemiesGroup.runChildUpdate = true;
     this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
+    this.physics.add.overlap(this.enemiesGroup, this.areaOfEffect!, (enemy, area) => {
+      // console.log('Enemy hit by area effect:', enemy, area);
+      const enemyObj = enemy as Enemy;
+      const areaObj = area as Projectile;
+      if (areaObj.areaEffect) areaObj.areaEffect(enemyObj);
+    });
 
     this.spawnTimer = this.time.addEvent({
       delay: 3000,
       loop: true,
       callback: () => {
-        const x = Phaser.Math.Between(
-          this.player.x - window.innerWidth / 2,
-          this.player.x + window.innerWidth / 2
-        );
-        const y = Phaser.Math.Between(
-          this.player.y - window.innerHeight / 2,
-          this.player.y + window.innerHeight / 2
-        );
+        // const x = Phaser.Math.Between(
+        //   this.player.x - window.innerWidth / 2,
+        //   this.player.x + window.innerWidth / 2
+        // );
+        // const y = Phaser.Math.Between(
+        //   this.player.y - window.innerHeight / 2,
+        //   this.player.y + window.innerHeight / 2
+        // );
 
-        new Skeleton(this, x, y, 'skeleton', this.enemiesGroup!);
+        // new Skeleton(this, x, y, 'skeleton', this.enemiesGroup!);
+          this.spawnEnemies()
+
       }
     });
     this.events.on('level-up', () => {
       const minDelay = 500;
-      const maxDelay = 1500;
+      const maxDelay = 3000;
       const lvl = Math.min(this.player.lvl, 15);
       const newDelay = maxDelay - ((maxDelay - minDelay) * (lvl - 1) / (15 - 1));
       if (this.spawnTimer) {
@@ -56,17 +66,7 @@ export class GameScene extends Phaser.Scene {
         delay: newDelay,
         loop: true,
         callback: () => {
-          for (let i = 0; i < this.player.lvl; i++) {
-              const spawnX = Phaser.Math.Between(
-                this.player.x - window.innerWidth / 2,
-                this.player.x + window.innerWidth / 2
-              );
-              const spawnY = Phaser.Math.Between(
-                this.player.y - window.innerHeight / 2,
-                this.player.y + window.innerHeight / 2
-              );
-            new Skeleton(this, spawnX, spawnY, 'skeleton', this.enemiesGroup!);
-            }
+          this.spawnEnemies()
         }
       });
       console.log(`Spawn delay updated to ${newDelay}ms for level ${this.player.lvl}`);
@@ -111,9 +111,42 @@ export class GameScene extends Phaser.Scene {
         new Comet(this, this.player),
         new Comet2(this, this.player),
         new Aura(this, this.player),
+        new Venom(this, this.player)
       ]
     });
   }
+
+  spawnEnemies() {
+    const cam = this.cameras.main;
+    const margin = 100;
+
+    const viewLeft = cam.worldView.left;
+    const viewRight = cam.worldView.right;
+    const viewTop = cam.worldView.top;
+    const viewBottom = cam.worldView.bottom;
+
+    for (let i = 0; i < this.player.lvl; i++) {
+      const side = Phaser.Math.Between(0, 3);
+      let x = 0, y = 0;
+
+      if (side === 0) { // top
+        x = Phaser.Math.Between(viewLeft, viewRight);
+        y = viewTop - margin;
+      } else if (side === 1) { // bottom
+        x = Phaser.Math.Between(viewLeft, viewRight);
+        y = viewBottom + margin;
+      } else if (side === 2) { // left
+        x = viewLeft - margin;
+        y = Phaser.Math.Between(viewTop, viewBottom);
+      } else { // right
+        x = viewRight + margin;
+        y = Phaser.Math.Between(viewTop, viewBottom);
+      }
+
+      new Skeleton(this, x, y, 'skeleton', this.enemiesGroup!);
+    }
+  }
+
 
   killEnemies() {
     if (this.enemiesGroup) {
@@ -135,7 +168,8 @@ export class GameScene extends Phaser.Scene {
       console.log('hit', projectile, enemy);
       const proj = projectile as Projectile;
       const enemyObj = enemy as Enemy;
-      proj.onHitTarget(enemyObj);
+      console.log('Projectile hit enemy:', proj, enemyObj);
+      proj.onHitTarget(enemyObj, this);
     });
   }
 

@@ -93,7 +93,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  takeDamage(damage: number) {
+  takeDamage(damage: number, damageDuration: number = 100) {
     if (this.takingDamage || this.dead) return;
     this.takingDamage = true;
     this.health -= damage;
@@ -103,10 +103,16 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
       if (this.baseColor) {
         this.setTint(this.baseColor);
       }
+    });
+    this.scene.time.delayedCall(damageDuration, () => {
+      // this.clearTint();
+      // if (this.baseColor) {
+      //   this.setTint(this.baseColor);
+      // }
       this.takingDamage = false;
     });
     if (this.health <= 0) {
-      this.scene.player.addExperience(50);
+      this.scene.player.addExperience(30);
       this.die();
     }
   }

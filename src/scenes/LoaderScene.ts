@@ -49,8 +49,10 @@ class LoaderScene extends Phaser.Scene {
   
     this.load.spritesheet('comet', 'assets/Effect_and_FX_Pixel_Part_12_Free/Effect and FX Pixel Part 12 Free/579.png', { frameWidth: 896/14, frameHeight: 576/9 });
     this.load.spritesheet('comet_2', 'assets/Effect_and_FX_Pixel_Part_12_Free/Effect and FX Pixel Part 12 Free/567.png', { frameWidth: 832/13, frameHeight: 576/9 });
+    this.load.spritesheet('venom_projectile', 'assets/Effect_and_FX_Pixel_Part_12_Free/Effect and FX Pixel Part 12 Free/586.png', { frameWidth: 832/13, frameHeight: 576/9 });
   
     this.load.image('aura', 'assets/aura.png');
+    this.load.image('venom', 'assets/venom.png');
   }
 
   create() {

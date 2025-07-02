@@ -62,3 +62,19 @@ export class Aura extends Skill {
         this.setScale(scaleX, scaleY);
     }
 }
+
+export class Venom extends Skill {
+    constructor(scene: Phaser.Scene, player: Player) {
+        super(scene, player);
+        this.cooldown = 2200;
+        this.lastUsed = 500;
+        this.projectileKey = 'venom'; // Key for the projectile type
+        this.type = 'Venom';
+        this.aoeRange = 40; // Range of the skill
+    }
+
+    upgrade() {
+        this.damage += 10; // Incrementa el daño de la habilidad
+        this.aoeRange += 20; // Incrementa el rango de la habilidad
+    }
+}
