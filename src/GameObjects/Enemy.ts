@@ -16,8 +16,11 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
   scene: GameScene;
   hasAttackListener: boolean = false;
   baseColor?: number; // Color base para el tint
+  difficulty: number = 1;
+  baseDamage: number = 10;
+  baseHealth: number = 10;
 
-  constructor(scene: GameScene, x: number, y: number, texture: string, group: Phaser.Physics.Arcade.Group) {
+  constructor(scene: GameScene, x: number, y: number, texture: string = 'skeleton', group: Phaser.Physics.Arcade.Group) {
     super(scene, x, y, texture);
     this.group = group;
     this.scene = scene;

@@ -33,24 +33,48 @@ class LoaderScene extends Phaser.Scene {
       loadingText.destroy();
     });
 
-    // Cargar todos los assets del juego aquí
+    //MAP
     this.load.image('brick_1', '/assets/brickwall_.jpg');
     this.load.image('brick_2', '/assets/brickwall_2.jpg');
 
+    //PLAYER
     this.load.spritesheet('player', '/assets/Necromancer/Idle/spr_NecromancerIdle_strip50.png', { frameWidth: 4800/50, frameHeight: 96 });
     this.load.spritesheet('walk', '/assets/Necromancer/Walk/spr_NecromancerWalk_strip10.png', { frameWidth: 960/10, frameHeight: 96 });  
     this.load.spritesheet('spawn', '/assets/Necromancer/Spawn/spr_NecromancerSpawn_strip20.png', { frameWidth: 2560/20, frameHeight: 128 });  
     this.load.spritesheet('death', '/assets/Necromancer/Death/spr_NecromancerDeath_strip52.png', { frameWidth: 4992/52, frameHeight: 96 });  
 
+    //ENEMIES
     this.load.spritesheet('skeleton', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Idle.png', { frameWidth: 768/8, frameHeight: 64 });
     this.load.spritesheet('skeleton-walk', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Walk.png', { frameWidth: 960/10, frameHeight: 64 });  
     this.load.spritesheet('skeleton-attack', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Attack1.png', { frameWidth: 960/10, frameHeight: 64 });
     this.load.spritesheet('skeleton-death', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Die.png', { frameWidth: 1248/13, frameHeight: 64 });
   
+    this.load.spritesheet('green-skeleton', '/assets/enemies/GreenSkeleton/Idle.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('green-skeleton-walk', '/assets/enemies/GreenSkeleton/Walk.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('green-skeleton-attack', '/assets/enemies/GreenSkeleton/Attack.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('green-skeleton-death', '/assets/enemies/GreenSkeleton/Death.png', { frameWidth: 150, frameHeight: 150 });
+
+    this.load.spritesheet('eye', '/assets/enemies/FlyingEye/Flight.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('eye-walk', '/assets/enemies/FlyingEye/Flight.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('eye-attack', '/assets/enemies/FlyingEye/Attack.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('eye-death', '/assets/enemies/FlyingEye/Death.png', { frameWidth: 150, frameHeight: 150 });
+
+    this.load.spritesheet('goblin', '/assets/enemies/Goblin/Idle.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('goblin-walk', '/assets/enemies/Goblin/Run.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('goblin-attack', '/assets/enemies/Goblin/Attack.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('goblin-death', '/assets/enemies/Goblin/Death.png', { frameWidth: 150, frameHeight: 150 });
+
+    this.load.spritesheet('mushroom', '/assets/enemies/Mushroom/Idle.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('mushroom-walk', '/assets/enemies/Mushroom/Run.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('mushroom-attack', '/assets/enemies/Mushroom/Attack.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('mushroom-death', '/assets/enemies/Mushroom/Death.png', { frameWidth: 150, frameHeight: 150 });
+
+    //PROJECTILES
     this.load.spritesheet('comet', 'assets/Effect_and_FX_Pixel_Part_12_Free/Effect and FX Pixel Part 12 Free/579.png', { frameWidth: 896/14, frameHeight: 576/9 });
     this.load.spritesheet('comet_2', 'assets/Effect_and_FX_Pixel_Part_12_Free/Effect and FX Pixel Part 12 Free/567.png', { frameWidth: 832/13, frameHeight: 576/9 });
     this.load.spritesheet('venom_projectile', 'assets/Effect_and_FX_Pixel_Part_12_Free/Effect and FX Pixel Part 12 Free/586.png', { frameWidth: 832/13, frameHeight: 576/9 });
   
+    //SKILLS
     this.load.image('aura', 'assets/aura.png');
     this.load.image('venom', 'assets/venom.png');
   }

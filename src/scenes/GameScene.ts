@@ -1,10 +1,16 @@
 import * as Phaser from 'phaser';
 import Player from '../GameObjects/Player';
-import Skeleton from '@/GameObjects/Skeleton';
+// import Skeleton from '@/GameObjects/Skeleton';
 import Projectile from '@/GameObjects/Projectile';
-import Enemy from '@/GameObjects/Enemy';
 import { SkillsManager } from '@/GameObjects/SkillsManager';
 import { Aura, Comet, Comet2, Venom } from '@/GameObjects/Skills';
+import Goblin from '@/GameObjects/Goblin';
+import Skeleton from '@/GameObjects/Skeleton';
+import Eye from '@/GameObjects/Eye';
+import GreenSkeleton from '@/GameObjects/GreenSkeleton';
+import Mushroom from '@/GameObjects/Mushroom';
+import Enemy from '@/GameObjects/Enemy';
+// import GreenSkeleton from '@/GameObjects/GreenSkeleton';
 
 export class GameScene extends Phaser.Scene {
   player!: Player;
@@ -14,6 +20,8 @@ export class GameScene extends Phaser.Scene {
   canWin: boolean = true; // Variable para controlar si se puede ganar
   spawnTimer?: Phaser.Time.TimerEvent;
   skillsManager: SkillsManager | undefined; // Cambia esto al tipo correcto de tu SkillsManager
+  enemiesByLevel: { [key: number]: Array<typeof Enemy> } = {}; // Mapa de enemigos por nivel
+  difficultyByLvl: number = 4; // Dificultad del juego, puedes ajustarla según sea necesario
 
   constructor() {
     super({ key: 'GameScene' });
@@ -28,37 +36,37 @@ export class GameScene extends Phaser.Scene {
     this.projectiles = this.physics.add.group();
     this.areaOfEffect = this.physics.add.group();
     this.enemiesGroup.runChildUpdate = true;
-    this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
-    this.physics.add.overlap(this.enemiesGroup, this.areaOfEffect!, (enemy, area) => {
-      // console.log('Enemy hit by area effect:', enemy, area);
-      const enemyObj = enemy as Enemy;
-      const areaObj = area as Projectile;
-      if (areaObj.areaEffect) areaObj.areaEffect(enemyObj);
-    });
+    this.enemiesByLevel = {
+      1: [Skeleton],
+      2: [Skeleton],
+      3: [Skeleton],
+      4: [Skeleton, Eye],
+      5: [Skeleton, Eye],
+      6: [Skeleton, Eye],
+      7: [Eye, Goblin],
+      8: [Eye, Goblin],
+      9: [Eye, Goblin],
+      10: [Eye, Goblin, GreenSkeleton],
+      11: [Eye, Goblin, GreenSkeleton],
+      12: [Eye, Goblin, GreenSkeleton],
+      13: [GreenSkeleton, Mushroom],
+      14: [GreenSkeleton, Mushroom],
+      15: [GreenSkeleton, Mushroom, Goblin]
+    };
 
     this.spawnTimer = this.time.addEvent({
       delay: 3000,
       loop: true,
       callback: () => {
-        // const x = Phaser.Math.Between(
-        //   this.player.x - window.innerWidth / 2,
-        //   this.player.x + window.innerWidth / 2
-        // );
-        // const y = Phaser.Math.Between(
-        //   this.player.y - window.innerHeight / 2,
-        //   this.player.y + window.innerHeight / 2
-        // );
-
-        // new Skeleton(this, x, y, 'skeleton', this.enemiesGroup!);
           this.spawnEnemies()
-
       }
     });
     this.events.on('level-up', () => {
-      const minDelay = 500;
-      const maxDelay = 3000;
-      const lvl = Math.min(this.player.lvl, 15);
-      const newDelay = maxDelay - ((maxDelay - minDelay) * (lvl - 1) / (15 - 1));
+      // const minDelay = 500;
+      // const maxDelay = 3000;
+      // const lvl = Math.min(this.player.lvl, 15);
+      // const newDelay = maxDelay - ((maxDelay - minDelay) * (lvl - 1) / (15 - 1));
+      const newDelay = 3000;
       if (this.spawnTimer) {
         this.spawnTimer.remove(false);
       }
@@ -84,12 +92,12 @@ export class GameScene extends Phaser.Scene {
     const bounds = this.physics.world.bounds;
     this.createTileGrid(bounds.width, bounds.height, window.innerWidth / 16, 'brick_2');
     const mask = this.add.graphics();
-    mask.fillStyle(0x7b7554, 0.6); // Color crema con 50% de transparencia
+    mask.fillStyle(0x7b7554, 0.6);
     mask.fillRect(
-        -window.innerWidth,  // Extender la máscara a la izquierda
-        -window.innerHeight, // Extender la máscara hacia arriba
-        bounds.width + window.innerWidth * 2,  // Aumentar el ancho de la máscara
-        bounds.height + window.innerHeight * 2 // Aumentar la altura de la máscara
+        -window.innerWidth,
+        -window.innerHeight,
+        bounds.width + window.innerWidth * 2,
+        bounds.height + window.innerHeight * 2
       );
       
   }
@@ -99,7 +107,7 @@ export class GameScene extends Phaser.Scene {
       for (let y = 0; y < height; y += tileWidth) {
         const image = this.add.image(x, y, texture).setOrigin(0, 0);
         image.displayWidth = tileWidth;
-        image.displayHeight = tileWidth; // Mantener la relación de aspecto
+        image.displayHeight = tileWidth;
       }
     }
   }
@@ -124,11 +132,16 @@ export class GameScene extends Phaser.Scene {
     const viewRight = cam.worldView.right;
     const viewTop = cam.worldView.top;
     const viewBottom = cam.worldView.bottom;
+    
+    const currentDifficulty = this.player.lvl * this.difficultyByLvl;
+    const enemiesToSpawn = this.enemiesByLevel[this.player.lvl] || [Skeleton];
+    let difficultyCount = 0;
 
-    for (let i = 0; i < this.player.lvl; i++) {
+    while (difficultyCount < currentDifficulty) {
+      const enemyClass: typeof Enemy = enemiesToSpawn[Phaser.Math.Between(0, enemiesToSpawn.length - 1)];
       const side = Phaser.Math.Between(0, 3);
       let x = 0, y = 0;
-
+      console.log(`Spawning enemy of type ${enemyClass.prototype.difficulty} on side ${side} with difficulty count ${difficultyCount}, current difficulty ${currentDifficulty}`);
       if (side === 0) { // top
         x = Phaser.Math.Between(viewLeft, viewRight);
         y = viewTop - margin;
@@ -143,7 +156,8 @@ export class GameScene extends Phaser.Scene {
         y = Phaser.Math.Between(viewTop, viewBottom);
       }
 
-      new Skeleton(this, x, y, 'skeleton', this.enemiesGroup!);
+      const newEnemy = new enemyClass(this, x, y, undefined, this.enemiesGroup!);
+      difficultyCount += newEnemy.difficulty || 1;
     }
   }
 
@@ -162,6 +176,12 @@ export class GameScene extends Phaser.Scene {
     if (this.enemiesGroup) {
       this.enemiesGroup.runChildUpdate = true;
       this.physics.add.collider(this.enemiesGroup, this.enemiesGroup, () => {});
+      this.physics.add.overlap(this.enemiesGroup, this.areaOfEffect!, (enemy, area) => {
+        // console.log('Enemy hit by area effect:', enemy, area);
+        const enemyObj = enemy as Enemy;
+        const areaObj = area as Projectile;
+        if (areaObj.areaEffect) areaObj.areaEffect(enemyObj);
+      });
     }
     this.physics.add.collider(this.player, this.enemiesGroup!, () => {});
     this.physics.add.collider(this.projectiles!, this.enemiesGroup!, (projectile, enemy) => {
