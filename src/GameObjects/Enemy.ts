@@ -1,4 +1,5 @@
 import GameScene from "@/scenes/GameScene";
+import Coin from "./Coin";
 
 class Enemy extends Phaser.Physics.Arcade.Sprite {
   canMove: boolean;
@@ -15,15 +16,17 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
   group: Phaser.Physics.Arcade.Group;
   scene: GameScene;
   hasAttackListener: boolean = false;
-  baseColor?: number; // Color base para el tint
+  baseColor?: number;
   difficulty: number = 1;
   baseDamage: number = 10;
   baseHealth: number = 10;
+  isSpecialEnemy: boolean = false;
 
-  constructor(scene: GameScene, x: number, y: number, texture: string = 'skeleton', group: Phaser.Physics.Arcade.Group) {
+  constructor(scene: GameScene, x: number, y: number, texture: string = 'skeleton', group: Phaser.Physics.Arcade.Group, isSpecialEnemy: boolean = false) {
     super(scene, x, y, texture);
     this.group = group;
     this.scene = scene;
+    this.isSpecialEnemy = isSpecialEnemy;
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -31,7 +34,11 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     this.canMove = false;
     // this.scene.game.events.on('game-over', this.gameOver, this);
-
+    if (isSpecialEnemy) {
+      this.baseColor = 0x66ccff;
+      this.setTint(this.baseColor);
+      this.baseHealth = this.baseHealth * 10;
+    }
     this.spawn();
   }
 
@@ -130,6 +137,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.anims.stop();
     this.play(this.deathAnimKey!);
     this.once('animationcomplete', () => {
+      if (this.isSpecialEnemy) this.dropCoin();
       this.group.remove(this, true, true); // ya destruye
     });
   }
@@ -162,6 +170,19 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
       }
     );
     }
+  }
+
+  dropCoin() {
+    const coin = new Coin(
+      this.scene,
+      this.x,
+      this.y,
+      'coin',
+      this.difficulty
+    )
+    console.log('Coin dropped:', coin);
+    // Create the coin animation if it doesn't exist
+    
   }
 
   preUpdate(time: number, delta: number) {

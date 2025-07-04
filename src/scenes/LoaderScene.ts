@@ -77,6 +77,9 @@ class LoaderScene extends Phaser.Scene {
     //SKILLS
     this.load.image('aura', 'assets/aura.png');
     this.load.image('venom', 'assets/venom.png');
+
+    //LOOT
+    this.load.spritesheet('coin', 'assets/coin.png', { frameWidth: 256/8, frameHeight: 32 });
   }
 
   create() {

@@ -4,8 +4,8 @@ import GameScene from '@/scenes/GameScene';
 
 class Goblin extends Enemy {
 
-    constructor(scene: GameScene, x: number, y: number, texture: string = 'goblin', group: Phaser.Physics.Arcade.Group) {
-        super(scene, x, y, texture, group);
+    constructor(scene: GameScene, x: number, y: number, texture: string = 'goblin', group: Phaser.Physics.Arcade.Group, isSpecialEnemy: boolean = false) {
+        super(scene, x, y, texture, group, isSpecialEnemy);
         group.add(this);
         this.setScale(1.2);
         this.difficulty = 5; // Default difficulty

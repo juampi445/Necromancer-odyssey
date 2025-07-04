@@ -10,6 +10,7 @@ import Eye from '@/GameObjects/Eye';
 import GreenSkeleton from '@/GameObjects/GreenSkeleton';
 import Mushroom from '@/GameObjects/Mushroom';
 import Enemy from '@/GameObjects/Enemy';
+import Coin from '@/GameObjects/Coin';
 // import GreenSkeleton from '@/GameObjects/GreenSkeleton';
 
 export class GameScene extends Phaser.Scene {
@@ -17,11 +18,15 @@ export class GameScene extends Phaser.Scene {
   enemiesGroup: Phaser.Physics.Arcade.Group | undefined;
   projectiles: Phaser.Physics.Arcade.Group | undefined;
   areaOfEffect: Phaser.Physics.Arcade.Group | undefined;
-  canWin: boolean = true; // Variable para controlar si se puede ganar
+  coins: Phaser.Physics.Arcade.Group | undefined;
+  canWin: boolean = true;
   spawnTimer?: Phaser.Time.TimerEvent;
-  skillsManager: SkillsManager | undefined; // Cambia esto al tipo correcto de tu SkillsManager
-  enemiesByLevel: { [key: number]: Array<typeof Enemy> } = {}; // Mapa de enemigos por nivel
-  difficultyByLvl: number = 4; // Dificultad del juego, puedes ajustarla según sea necesario
+  skillsManager: SkillsManager | undefined;
+  enemiesByLevel: { [key: number]: Array<typeof Enemy> } = {};
+  difficultyByLvl: number = 4;
+  enemiesSpawnedCount: number = 0;
+  specialEnemyThreshold: number = 10;
+  totalCoins: number = 0;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -35,6 +40,7 @@ export class GameScene extends Phaser.Scene {
     this.enemiesGroup = this.physics.add.group();
     this.projectiles = this.physics.add.group();
     this.areaOfEffect = this.physics.add.group();
+    this.coins = this.physics.add.group();
     this.enemiesGroup.runChildUpdate = true;
     this.enemiesByLevel = {
       1: [Skeleton],
@@ -156,8 +162,13 @@ export class GameScene extends Phaser.Scene {
         y = Phaser.Math.Between(viewTop, viewBottom);
       }
 
-      const newEnemy = new enemyClass(this, x, y, undefined, this.enemiesGroup!);
+      const isSpecialEnemy = this.enemiesSpawnedCount >= this.specialEnemyThreshold;
+      console.log(`Spawning aa44(${this.enemiesSpawnedCount}, ${y}) with isSpecialEnemy: ${isSpecialEnemy}`);
+      const newEnemy = new enemyClass(this, x, y, undefined, this.enemiesGroup!, isSpecialEnemy);
       difficultyCount += newEnemy.difficulty || 1;
+      if (isSpecialEnemy) {
+        this.enemiesSpawnedCount = 0;
+      } else this.enemiesSpawnedCount++;
     }
   }
 
@@ -191,6 +202,13 @@ export class GameScene extends Phaser.Scene {
       console.log('Projectile hit enemy:', proj, enemyObj);
       proj.onHitTarget(enemyObj, this);
     });
+    if (this.player.collectBody) {
+      this.physics.add.overlap(this.player.collectBody, this.coins!, (playerCollectBody, coin) => {
+        // const playerCollectBody = player as Player;
+        const coinObj = coin as Coin;
+        coinObj.collect(this.player, this);
+      });
+    }
   }
 
   update(time: number, delta: number) {

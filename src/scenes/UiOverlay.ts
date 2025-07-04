@@ -1,8 +1,9 @@
 import * as Phaser from 'phaser';
-import Skill from '../GameObjects/Skill'; // adjust path if needed
+import Skill from '../GameObjects/Skill';
 
 class UIOverlay extends Phaser.Scene {
     private healthBar!: Phaser.GameObjects.Graphics;
+    private healthText!: Phaser.GameObjects.Text;
     private playerHealth: number = 100;
 
     private expBar!: Phaser.GameObjects.Graphics;
@@ -10,6 +11,9 @@ class UIOverlay extends Phaser.Scene {
     private levelText!: Phaser.GameObjects.Text;
     private experience: number = 0;
     private level: number = 1;
+
+    private coinContainer!: Phaser.GameObjects.Container;
+    private coinText!: Phaser.GameObjects.Text;
 
     private modal!: Phaser.GameObjects.Container;
     private modalBackground!: Phaser.GameObjects.Graphics;
@@ -22,6 +26,10 @@ class UIOverlay extends Phaser.Scene {
     create() {
         // Health bar
         this.healthBar = this.add.graphics();
+        this.healthText = this.add.text(0, 0, '', {
+            fontSize: '18px',
+            color: '#ffffff',
+        });
         this.updateHealthBar();
 
         // Experience bar
@@ -36,9 +44,22 @@ class UIOverlay extends Phaser.Scene {
         });
         this.updateExpBar();
 
+        // Coin Counter
+        const camera = this.cameras.main;
+        this.coinContainer = this.add.container(camera.midPoint.x, camera.scrollY + 10).setDepth(10);
+        const coinBg = this.add.graphics();
+        coinBg.fillStyle(0x000000, 0.7);
+        coinBg.fillRoundedRect(-60, 0, 120, 32, 16);
+        this.coinText = this.add.text(0, 5, '0', {
+            fontSize: '20px',
+            color: '#ffffff',
+        }).setOrigin(0.5, 0);
+        this.coinContainer.add([coinBg, this.coinText]);
+
         // Events
         this.game.events.on('update-health', this.handleHealthUpdate, this);
         this.game.events.on('update-experience', this.handleExpUpdate, this);
+        this.game.events.on('update-coins', this.updateCoins, this);
         this.game.events.on('game-win', () => this.showModal("win"), this);
         this.game.events.on('game-over', () => this.showModal("lose"), this);
         this.game.events.on('open-skill-modal', this.handleSkillModal, this);
@@ -63,16 +84,33 @@ class UIOverlay extends Phaser.Scene {
         this.updateExpBar();
     }
 
+    updateCoins(amount: number) {
+        this.coinText.setText(`${amount}`);
+    }
+
     updateHealthBar() {
         const camera = this.cameras.main;
-        const width = camera.width * 0.4;
+        const barWidth = camera.width * 0.3;
+        const barHeight = 24;
+
+        const x = camera.scrollX + 20;
+        const y = camera.scrollY + 10;
+
+        const ratio = Phaser.Math.Clamp(this.playerHealth / 100, 0, 1);
+
         this.healthBar.clear();
-        this.healthBar.fillStyle(0xff0000);
-        this.healthBar.fillRect(10, 10, width, 20);
+        this.healthBar.fillStyle(0x880000);
+        this.healthBar.fillRoundedRect(x, y, barWidth, barHeight, 8);
+
         if (this.playerHealth > 0) {
-            this.healthBar.fillStyle(0x00ff00);
-            this.healthBar.fillRect(10, 10, width * (this.playerHealth / 100), 20);
+            this.healthBar.fillStyle(0x008000);
+            this.healthBar.fillRoundedRect(x, y, barWidth * ratio, barHeight, 8);
         }
+
+        const healthText = this.playerHealth > 0 ? this.playerHealth : 0;
+
+        this.healthText.setText(`HP: ${healthText} / 100`);
+        this.healthText.setPosition(x + 10, y + 2);
     }
 
     updateExpBar() {
@@ -107,8 +145,10 @@ class UIOverlay extends Phaser.Scene {
     }
 
     updateUIPosition() {
+        const camera = this.cameras.main;
         this.updateHealthBar();
         this.updateExpBar();
+        this.coinContainer.setPosition(camera.midPoint.x, camera.scrollY + 10);
     }
 
     createModal() {
@@ -131,7 +171,7 @@ class UIOverlay extends Phaser.Scene {
     showModal(key: string) {
         const { width, height } = this.cameras.main;
 
-        this.modalText.setText(key === 'win' ? 'Ganaste! \n ;D' : 'Perdiste \n ;D');
+        this.modalText.setText(key === 'win' ? '¡Ganaste! \n ;D' : 'Perdiste \n ;D');
         this.modal.setVisible(true);
         this.modal.setPosition(width / 2, -150);
 
@@ -166,7 +206,6 @@ class UIOverlay extends Phaser.Scene {
         skills.forEach(skill => {
             const playerSkill = playerSkills.find(s => s.type === skill.type);
             const hasSkill = !!playerSkill;
-            console.log(`Skill: ${skill.type}, Has Skill: ${hasSkill}`);
             const level = playerSkill?.lvl ?? 0;
             const canUpgrade = hasSkill && level < skill.maxLevel;
             const canUnlock = !hasSkill;
@@ -188,7 +227,6 @@ class UIOverlay extends Phaser.Scene {
 
             if (canUpgrade || canUnlock) {
                 btn.on('pointerdown', () => {
-                    console.log(canUnlock, canUpgrade, 'Skill: 00');
                     onSelect(skill.type, canUnlock, canUpgrade);
                     container.destroy(true);
                 });

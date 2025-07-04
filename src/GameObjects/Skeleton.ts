@@ -4,8 +4,8 @@ import GameScene from '@/scenes/GameScene';
 
 class Skeleton extends Enemy {
 
-    constructor(scene: GameScene, x: number, y: number, texture: string = 'skeleton', group: Phaser.Physics.Arcade.Group) {
-        super(scene, x, y, texture, group);
+    constructor(scene: GameScene, x: number, y: number, texture: string = 'skeleton', group: Phaser.Physics.Arcade.Group, isSpecialEnemy: boolean = false) {
+        super(scene, x, y, texture, group, isSpecialEnemy);
         group.add(this);
         this.setScale(1.2);
         this.difficulty = 1; // Default difficulty

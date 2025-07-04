@@ -13,6 +13,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   skills: Skill[]; // Lista de habilidades
   experience: number = 0; // Experiencia del jugador
   lvl: number = 1; // Nivel del jugador
+  collectRange: number = 100; // Rango de recolección de monedas
+  collectBody?: Phaser.GameObjects.Arc; // Cuerpo para la recolección de monedas
 
   constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
     super(scene, x, y, texture);
@@ -40,6 +42,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
   create() {
     this.body!.setSize(20, 38, true); // Ajustar el tamaño del cuerpo para que coincida con el sprite
+    // Crear el círculo de recolección y centrarlo en el jugador
+    this.createCollectBody();
 
     // Crear animaciones si no existen ya
     if (!this.scene.anims.exists('idle')) {
@@ -146,6 +150,20 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.game.events.emit('game-over'); // Emitir un evento para indicar que el jugador ha perdido
   }
 
+  createCollectBody() {
+    // this.collectBody = this.scene.add.circle(this.x, this.y, this.collectRange, 0xfff000, 0.2);
+    this.collectBody = this.scene.add.circle(this.x, this.y, this.collectRange, 0x000000, 0);
+    this.collectBody.setDepth(0);
+    this.scene.physics.add.existing(this.collectBody, false);
+    const collectBodyPhysics = this.collectBody.body as Phaser.Physics.Arcade.Body;
+    collectBodyPhysics.setAllowGravity(false);
+    collectBodyPhysics.setCircle(this.collectRange);
+    // collectBodyPhysics.setOffset(
+    //   -this.collectRange + this.body!.width / 2,
+    //   -this.collectRange + this.body!.height / 2
+    // );
+  }
+
   preUpdate(time: number, delta: number) {
     super.preUpdate(time, delta);
     this.update();
@@ -180,6 +198,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.health <= 0 && !this.dead) {
       this.dead = true;
       this.death();
+    }
+
+    if (this.collectBody) {
+      this.collectBody.setPosition(this.x, this.y);
     }
   }
 }
