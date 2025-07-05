@@ -98,12 +98,12 @@ class Skill extends Phaser.Physics.Arcade.Sprite {
     }
 
     upgrade() {
-        this.damage += 10; // Incrementa el daño de la habilidad
+        this.damage += 10;
         if (this.setRange) {
-            this.range += 20; // Incrementa el rango de la habilidad
-            this.setRange(this.range); // Llama al método para ajustar el rango si está definido
+            this.range += 20;
+            this.setRange(this.range);
         } else this.cooldown -= 100;
-        this.quantity += 1; // Incrementa la cantidad de proyectiles
+        this.quantity += 2;
     }
 
     update() {

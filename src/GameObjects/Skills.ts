@@ -78,3 +78,45 @@ export class Venom extends Skill {
         this.aoeRange += 20; // Incrementa el rango de la habilidad
     }
 }
+
+export class Lightning extends Skill {
+    constructor(scene: Phaser.Scene, player: Player) {
+        super(scene, player);
+        this.cooldown = 2200;
+        this.lastUsed = 500;
+        this.type = 'Lightning';
+        this.areaOfEffect = true;
+        this.range = scene.cameras.main.height;
+        this.quantity = 1;
+    }
+
+    useAreaSkill() {
+        if (this.canUse()) {
+            this.lastUsed = this.scene.time.now;
+            const enemiesInRange = this.getEnemiesInRange();
+            if (enemiesInRange.length > 0) {
+                console.log(this.quantity, 'enemies in range:', enemiesInRange.length);
+                const targets = Phaser.Utils.Array.Shuffle(enemiesInRange).slice(0, this.quantity);
+                // Create the animation if it doesn't exist
+                if (!this.scene.anims.exists('lightning')) {
+                    const totalFrames = this.scene.textures.get('lightning').frameTotal;
+                    this.scene.anims.create({
+                        key: 'lightning',
+                        frames: this.scene.anims.generateFrameNumbers('lightning', { start: 0, end: totalFrames - 1 }),
+                        frameRate: 16,
+                        repeat: 0
+                    });
+                }
+                targets.forEach(enemy => {
+                    const lightningAnim = this.scene.add.sprite(enemy.x, enemy.y + 40, 'lightning');
+                    lightningAnim.setOrigin(0.5, 1);
+                    lightningAnim.play('lightning');
+                    enemy.takeDamage(this.damage);
+                    lightningAnim.once('animationcomplete', () => {
+                        lightningAnim.destroy();
+                    });
+                });
+            }
+        }
+    }
+}

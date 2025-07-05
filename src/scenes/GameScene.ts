@@ -3,7 +3,7 @@ import Player from '../GameObjects/Player';
 // import Skeleton from '@/GameObjects/Skeleton';
 import Projectile from '@/GameObjects/Projectile';
 import { SkillsManager } from '@/GameObjects/SkillsManager';
-import { Aura, Comet, Comet2, Venom } from '@/GameObjects/Skills';
+import { Aura, Comet, Lightning, Venom } from '@/GameObjects/Skills';
 import Goblin from '@/GameObjects/Goblin';
 import Skeleton from '@/GameObjects/Skeleton';
 import Eye from '@/GameObjects/Eye';
@@ -123,9 +123,10 @@ export class GameScene extends Phaser.Scene {
       scene: this,
       skills: [
         new Comet(this, this.player),
-        new Comet2(this, this.player),
+        // new Comet2(this, this.player),
         new Aura(this, this.player),
-        new Venom(this, this.player)
+        new Venom(this, this.player),
+        new Lightning(this, this.player)
       ]
     });
   }
