@@ -3,11 +3,9 @@ import Skill from "./Skill";
 
 export class Comet extends Skill {
     constructor(scene: Phaser.Scene, player: Player) {
-        super(scene, player);
-        this.cooldown = 1000; // Cooldown time in milliseconds
-        this.range = 200; // Range of the skill
+        super(scene, player, 1000, 200, 'comet'); // Call super with cooldown, range, and texture key
         this.lastUsed = 0; // Last time the skill was used
-        this.type = 'AutoProjectile'; // Type of the skill
+        this.type = 'Comet'; // Type of the skill
         this.lvl = 1; // Initial level of the skill
     }
 
@@ -65,9 +63,7 @@ export class Aura extends Skill {
 
 export class Venom extends Skill {
     constructor(scene: Phaser.Scene, player: Player) {
-        super(scene, player);
-        this.cooldown = 2200;
-        this.lastUsed = 500;
+        super(scene, player, 2200, 500, 'venom'); // Call super with cooldown, range, and texture key
         this.projectileKey = 'venom'; // Key for the projectile type
         this.type = 'Venom';
         this.aoeRange = 40; // Range of the skill
@@ -81,9 +77,7 @@ export class Venom extends Skill {
 
 export class Lightning extends Skill {
     constructor(scene: Phaser.Scene, player: Player) {
-        super(scene, player);
-        this.cooldown = 2200;
-        this.lastUsed = 500;
+        super(scene, player, 2200, 500, 'lightning');
         this.type = 'Lightning';
         this.areaOfEffect = true;
         this.range = scene.cameras.main.height;

@@ -1,6 +1,7 @@
 interface Skill {
     type: string;
     maxLevel: number;
+    texture: { key: string };  // Added this so TS knows about texture.key
 }
 
 interface PlayerSkill {
@@ -26,9 +27,9 @@ export default class SkillsModal extends Phaser.Scene {
     private dragStartScrollY = 0;
     private scrollAreaHeight = 0;
     private visibleAreaHeight = 0;
-    private skillButtons: Phaser.GameObjects.Text[] = [];
-    private scrollbar!: Phaser.GameObjects.Rectangle;
+    private skillButtons: Phaser.GameObjects.Container[] = [];
 
+    private scrollbar!: Phaser.GameObjects.Rectangle;
     private titleHeight = 0;
     private scrollbarInitialY = 0;
 
@@ -45,10 +46,10 @@ export default class SkillsModal extends Phaser.Scene {
     create() {
         const camera = this.cameras.main;
 
-        // Mobile fullscreen fallback
+        // Detect touch device and adapt modal size
         const isTouch = this.sys.game.device.input.touch;
-        const modalWidth = isTouch ? camera.width * 0.9 : camera.width / 2;
-        const modalHeight = isTouch ? camera.height * 0.9 : (camera.height / 6) * 4;
+        const modalWidth = isTouch ? camera.width : camera.width / 2;
+        const modalHeight = isTouch ? camera.height : (camera.height / 6) * 4;
 
         const container = this.add.container(camera.midPoint.x, camera.midPoint.y).setDepth(20);
 
@@ -104,27 +105,48 @@ export default class SkillsModal extends Phaser.Scene {
             const canUpgrade = hasSkill && level < skill.maxLevel;
             const canUnlock = !hasSkill;
 
-            let label = `${skill.type} `;
+            // Container for button
+            const btn = this.add.container(0, y);
+
+            // Background rect
+            const bgRect = this.add.rectangle(0, 0, scrollAreaWidth, btnHeight, 0x333333)
+                .setOrigin(0, 0)
+                .setInteractive({ useHandCursor: true });
+
+            // Icon sprite on left (using skill.texture.key exactly)
+            const iconSize = btnHeight * 0.8;
+            const icon = this.add.sprite(10 + iconSize / 2, btnHeight / 2, skill.texture.key)
+                .setDisplaySize(iconSize, iconSize)
+                .setOrigin(0.5);
+
+            // Text: skill type top-right (aligned right)
+            const skillTypeText = this.add.text(scrollAreaWidth - 10, 5, skill.type, {
+                fontSize: '18px',
+                color: '#ffffff',
+                align: 'right',
+            }).setOrigin(1, 0);
+
+            // Text: label below skill type
+            let label = '';
             if (canUnlock) {
-                label += '(Locked) - Unlock';
+                label = '(Locked) - Unlock';
             } else {
-                label += `(Level ${level}/${skill.maxLevel})`;
+                label = `(Level ${level}/${skill.maxLevel})`;
                 if (canUpgrade) label += ' - Upgrade';
             }
-
-            const btn = this.add.text(0, y, label, {
-                fontSize: '18px',
+            const labelText = this.add.text(scrollAreaWidth - 10, 28, label, {
+                fontSize: '14px',
                 color: canUpgrade || canUnlock ? '#0f0' : '#888',
-                fixedWidth: scrollAreaWidth,
-                fixedHeight: btnHeight,
-                backgroundColor: '#333',
-                padding: { left: 10, right: 10, top: 5, bottom: 5 },
-            }).setOrigin(0, 0);
+                align: 'right',
+            }).setOrigin(1, 0);
 
-            btn.setInteractive({ useHandCursor: true });
+            btn.add([bgRect, icon, skillTypeText, labelText]);
 
             if (canUpgrade || canUnlock) {
-                btn.on('pointerup', () => {
+                bgRect.on('pointerdown', () => {
+                    // no action here to avoid conflict with dragging
+                });
+                bgRect.on('pointerup', () => {
                     if (!this.hasDragged) {
                         this.onSelect(skill.type, canUnlock, canUpgrade);
                         this.scene.stop();
@@ -135,6 +157,7 @@ export default class SkillsModal extends Phaser.Scene {
 
             this.scrollContainer.add(btn);
             this.skillButtons.push(btn);
+
             y += btnHeight + btnSpacing;
         });
 
@@ -150,14 +173,14 @@ export default class SkillsModal extends Phaser.Scene {
                 scrollbarWidth,
                 scrollbarHeight,
                 0x8b6c28,
-                0.9
+                1
             )
             .setOrigin(0.5, 0)
             .setScrollFactor(0);
         this.scrollbar.setStrokeStyle(1, 0x604e14);
         container.add(this.scrollbar);
 
-        // Drag + wheel scroll
+        // Input handlers for scroll drag and wheel
         this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
             const localY = pointer.y - (camera.midPoint.y - bg.height / 2 + this.titleHeight - 10);
             const localX = pointer.x - (camera.midPoint.x - bg.width / 2 + 20);
@@ -214,14 +237,19 @@ export default class SkillsModal extends Phaser.Scene {
                 const btnBottom = btnTop + btn.height;
                 const isVisible = btnBottom > 0 && btnTop < this.visibleAreaHeight;
                 if (isVisible) {
-                    btn.setInteractive({ useHandCursor: true });
+                    btn.list.forEach(child => {
+                        if ('setInteractive' in child) child.setInteractive({ useHandCursor: true });
+                    });
                 } else {
-                    btn.disableInteractive();
+                    btn.list.forEach(child => {
+                        if ('disableInteractive' in child) child.disableInteractive();
+                    });
                 }
             }
 
             const scrollRatio = this.scrollY / Math.max(1, this.scrollAreaHeight - this.visibleAreaHeight);
             const scrollbarTrack = this.visibleAreaHeight - this.scrollbar.height;
+
             this.scrollbar.y = this.scrollbarInitialY + scrollRatio * scrollbarTrack;
         }
     }
