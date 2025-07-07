@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
 import Skill from '../GameObjects/Skill';
+import SkillsModal from '@/GameObjects/SkillsModal';
 
 class UIOverlay extends Phaser.Scene {
     private healthBar!: Phaser.GameObjects.Graphics;
@@ -24,7 +25,6 @@ class UIOverlay extends Phaser.Scene {
     }
 
     create() {
-        // Health bar
         this.healthBar = this.add.graphics();
         this.healthText = this.add.text(0, 0, '', {
             fontSize: '18px',
@@ -32,7 +32,6 @@ class UIOverlay extends Phaser.Scene {
         });
         this.updateHealthBar();
 
-        // Experience bar
         this.expBar = this.add.graphics();
         this.expText = this.add.text(0, 0, '', {
             fontSize: '18px',
@@ -44,7 +43,6 @@ class UIOverlay extends Phaser.Scene {
         });
         this.updateExpBar();
 
-        // Coin Counter
         const camera = this.cameras.main;
         this.coinContainer = this.add.container(camera.midPoint.x, camera.scrollY + 10).setDepth(10);
         const coinBg = this.add.graphics();
@@ -188,53 +186,14 @@ class UIOverlay extends Phaser.Scene {
         playerSkills: Skill[],
         onSelect: (skillType: string, canUnlock: boolean, canUpgrade: boolean) => void
     ) {
-        const camera = this.cameras.main;
-        const container = this.add.container(camera.midPoint.x, camera.midPoint.y).setDepth(20);
-
-        const bg = this.add.rectangle(0, 0, 400, 300, 0x222222, 0.95).setOrigin(0.5);
-        container.add(bg);
-
-        const title = this.add.text(0, -120, 'Choose a Skill', {
-            fontSize: '24px',
-            color: '#ffffff',
-            align: 'center'
-        }).setOrigin(0.5);
-        container.add(title);
-
-        let y = -60;
-
-        skills.forEach(skill => {
-            const playerSkill = playerSkills.find(s => s.type === skill.type);
-            const hasSkill = !!playerSkill;
-            const level = playerSkill?.lvl ?? 0;
-            const canUpgrade = hasSkill && level < skill.maxLevel;
-            const canUnlock = !hasSkill;
-
-            let label = `${skill.type} `;
-            if (canUnlock) {
-                label += '(Locked) - Unlock';
-            } else {
-                label += `(Level ${level}/${skill.maxLevel})`;
-                if (canUpgrade) label += ' - Upgrade';
-            }
-
-            const btn = this.add.text(0, y, label, {
-                fontSize: '18px',
-                color: canUpgrade || canUnlock ? '#0f0' : '#888',
-                backgroundColor: '#333',
-                padding: { left: 10, right: 10, top: 5, bottom: 5 }
-            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-
-            if (canUpgrade || canUnlock) {
-                btn.on('pointerdown', () => {
-                    onSelect(skill.type, canUnlock, canUpgrade);
-                    container.destroy(true);
-                });
-            }
-
-            container.add(btn);
-            y += 50;
-        });
+        // Ensure SkillsModal scene is registered only once
+        if (!this.scene.get('SkillsModal')) {
+            // Import and add the SkillsModal scene if not already present
+            // (Assumes SkillsModal is imported at the top of this file)
+            this.scene.add('SkillsModal', SkillsModal, false);
+            this.scene.bringToTop('SkillsModal'); // bring the SkillsModal to the top of the scene stack
+            this.scene.launch('SkillsModal', { skills, playerSkills, onSelect });
+        }
     }
 
     shutdown() {

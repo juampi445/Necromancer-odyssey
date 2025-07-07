@@ -81,6 +81,9 @@ class LoaderScene extends Phaser.Scene {
 
     //LOOT
     this.load.spritesheet('coin', 'assets/coin.png', { frameWidth: 256/8, frameHeight: 32 });
+
+    //MODAL
+    this.load.image('modal-background', 'assets/Modal/bg.svg');
   }
 
   create() {

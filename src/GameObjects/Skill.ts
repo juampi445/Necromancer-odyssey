@@ -44,7 +44,7 @@ class Skill extends Phaser.Physics.Arcade.Sprite {
         // @ts-expect-error: enemiesGroup is not typed but is expected to exist in the scene
         this.scene.enemiesGroup?.children.iterate((enemy: Enemy) => {
             if (Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y) <= this.range) {
-                enemies.push(enemy);
+                if (!enemy.dead) enemies.push(enemy);
             }
         });
         return enemies;
