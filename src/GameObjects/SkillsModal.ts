@@ -21,15 +21,14 @@ export default class SkillsModal extends Phaser.Scene {
     private scrollY = 0;
     private targetScrollY = 0;
     private isDragging = false;
+    private hasDragged = false;
     private dragStartY = 0;
     private dragStartScrollY = 0;
     private scrollAreaHeight = 0;
     private visibleAreaHeight = 0;
     private skillButtons: Phaser.GameObjects.Text[] = [];
-
     private scrollbar!: Phaser.GameObjects.Rectangle;
 
-    // Store these to use in update()
     private titleHeight = 0;
     private scrollbarInitialY = 0;
 
@@ -45,10 +44,16 @@ export default class SkillsModal extends Phaser.Scene {
 
     create() {
         const camera = this.cameras.main;
+
+        // Mobile fullscreen fallback
+        const isTouch = this.sys.game.device.input.touch;
+        const modalWidth = isTouch ? camera.width * 0.9 : camera.width / 2;
+        const modalHeight = isTouch ? camera.height * 0.9 : (camera.height / 6) * 4;
+
         const container = this.add.container(camera.midPoint.x, camera.midPoint.y).setDepth(20);
 
         const bg = this.add
-            .tileSprite(0, 0, camera.width / 2, (camera.height / 6) * 4, 'modal-background')
+            .tileSprite(0, 0, modalWidth, modalHeight, 'modal-background')
             .setOrigin(0.5);
         container.add(bg);
 
@@ -71,18 +76,15 @@ export default class SkillsModal extends Phaser.Scene {
         const btnSpacing = 8;
         const btnHeight = (scrollAreaHeight - 2 * btnSpacing) / 3;
 
-        // Wrapper positioned correctly
         this.scrollWrapper = this.add.container(
             -bg.width / 2 + 20,
             -bg.height / 2 + this.titleHeight - 10
         );
         container.add(this.scrollWrapper);
 
-        // Inner scroll container that moves
         this.scrollContainer = this.add.container(0, 0);
         this.scrollWrapper.add(this.scrollContainer);
 
-        // Create mask matching wrapper area
         const maskShape = this.make.graphics({});
         maskShape.fillStyle(0xffffff);
         maskShape.fillRect(
@@ -94,8 +96,7 @@ export default class SkillsModal extends Phaser.Scene {
         this.scrollMask = maskShape.createGeometryMask();
         this.scrollWrapper.setMask(this.scrollMask);
 
-        // Add skill buttons inside scrollContainer
-        let y = btnSpacing / 2; // Start with some padding from the top
+        let y = btnSpacing / 2;
         this.skills.forEach(skill => {
             const playerSkill = this.playerSkills.find(s => s.type === skill.type);
             const hasSkill = !!playerSkill;
@@ -123,22 +124,22 @@ export default class SkillsModal extends Phaser.Scene {
             btn.setInteractive({ useHandCursor: true });
 
             if (canUpgrade || canUnlock) {
-                btn.on('pointerdown', () => {
-                    this.onSelect(skill.type, canUnlock, canUpgrade);
-                    this.scene.stop();
-                    this.scene.remove('SkillsModal');
+                btn.on('pointerup', () => {
+                    if (!this.hasDragged) {
+                        this.onSelect(skill.type, canUnlock, canUpgrade);
+                        this.scene.stop();
+                        this.scene.remove('SkillsModal');
+                    }
                 });
             }
 
             this.scrollContainer.add(btn);
             this.skillButtons.push(btn);
-
             y += btnHeight + btnSpacing;
         });
 
         this.scrollAreaHeight = y;
 
-        // Scrollbar
         const scrollbarHeight = this.getScrollbarHeight();
         this.scrollbarInitialY = -bg.height / 2 + this.titleHeight - 10;
 
@@ -156,7 +157,7 @@ export default class SkillsModal extends Phaser.Scene {
         this.scrollbar.setStrokeStyle(1, 0x604e14);
         container.add(this.scrollbar);
 
-        // Input
+        // Drag + wheel scroll
         this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
             const localY = pointer.y - (camera.midPoint.y - bg.height / 2 + this.titleHeight - 10);
             const localX = pointer.x - (camera.midPoint.x - bg.width / 2 + 20);
@@ -167,6 +168,7 @@ export default class SkillsModal extends Phaser.Scene {
                 localX <= scrollAreaWidth + scrollbarWidth + 10
             ) {
                 this.isDragging = true;
+                this.hasDragged = false;
                 this.dragStartY = pointer.y;
                 this.dragStartScrollY = this.targetScrollY;
             }
@@ -179,6 +181,7 @@ export default class SkillsModal extends Phaser.Scene {
         this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
             if (this.isDragging) {
                 const delta = pointer.y - this.dragStartY;
+                if (Math.abs(delta) > 5) this.hasDragged = true;
                 this.setTargetScroll(this.dragStartScrollY - delta);
             }
         });
@@ -219,7 +222,6 @@ export default class SkillsModal extends Phaser.Scene {
 
             const scrollRatio = this.scrollY / Math.max(1, this.scrollAreaHeight - this.visibleAreaHeight);
             const scrollbarTrack = this.visibleAreaHeight - this.scrollbar.height;
-
             this.scrollbar.y = this.scrollbarInitialY + scrollRatio * scrollbarTrack;
         }
     }
@@ -234,7 +236,7 @@ export default class SkillsModal extends Phaser.Scene {
     }
 
     private getScrollbarHeight(): number {
-        const ratio = this.visibleAreaHeight / Math.max(0, this.scrollAreaHeight);
+        const ratio = this.visibleAreaHeight / Math.max(1, this.scrollAreaHeight);
         return Phaser.Math.Clamp(ratio * this.visibleAreaHeight, 20, this.visibleAreaHeight);
     }
 }
