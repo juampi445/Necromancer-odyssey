@@ -41,13 +41,13 @@ export class GameScene extends Phaser.Scene {
   create() {
     this.physics.world.setBounds(0, 0, window.innerWidth * 4, window.innerHeight * 4);
     this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    this.createBg();
     this.player = new Player(this, this.physics.world.bounds.width / 2, this.physics.world.bounds.height / 2, 'player');
     this.createSkillsManager();
     this.enemiesGroup = this.physics.add.group();
     this.projectiles = this.physics.add.group();
     this.areaOfEffect = this.physics.add.group();
     this.coins = this.physics.add.group();
-    this.createBg();
     this.enemiesGroup.runChildUpdate = true;
     this.enemiesByLevel = {
       1: [Skeleton],
