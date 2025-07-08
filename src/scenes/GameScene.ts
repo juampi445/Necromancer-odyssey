@@ -104,7 +104,7 @@ export class GameScene extends Phaser.Scene {
 
   createBg() {
     const bounds = this.physics.world.bounds;
-    const tileWidth = !this.isTouchDevice ? window.innerWidth / 16 : window.innerWidth / 64;
+    const tileWidth = !this.isTouchDevice ? window.innerWidth / 16 : window.innerWidth / 4;
     this.createTileGrid(bounds.width, bounds.height, tileWidth, 'brick_2');
     const mask = this.add.graphics();
     mask.fillStyle(0x7b7554, 0.6);
