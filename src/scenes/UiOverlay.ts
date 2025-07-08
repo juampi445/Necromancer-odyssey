@@ -186,15 +186,18 @@ class UIOverlay extends Phaser.Scene {
         playerSkills: Skill[],
         onSelect: (skillType: string, canUnlock: boolean, canUpgrade: boolean) => void
     ) {
+        // Reset all active pointer states (fixes stuck touch issue on mobile)
+        this.input.manager.pointers.forEach(p => p.reset());
+
         // Ensure SkillsModal scene is registered only once
         if (!this.scene.get('SkillsModal')) {
-            // Import and add the SkillsModal scene if not already present
-            // (Assumes SkillsModal is imported at the top of this file)
             this.scene.add('SkillsModal', SkillsModal, false);
-            this.scene.bringToTop('SkillsModal'); // bring the SkillsModal to the top of the scene stack
-            this.scene.launch('SkillsModal', { skills, playerSkills, onSelect });
         }
+
+        this.scene.bringToTop('SkillsModal');
+        this.scene.launch('SkillsModal', { skills, playerSkills, onSelect });
     }
+
 
     shutdown() {
         this.game.events.off('open-skill-modal', this.handleSkillModal, this);
