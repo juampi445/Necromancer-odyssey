@@ -50,7 +50,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     if (!this.scene.anims.exists('idle')) {
       this.scene.anims.create({
         key: 'idle',
-        frames: this.anims.generateFrameNumbers('player', { start: 10, end: (this.scene as GameScene).isTouchDevice ? 49 : 19 }),
+        frames: this.anims.generateFrameNumbers('player', { start: 0, end: (this.scene as GameScene).isTouchDevice ? 49 : 10 }),
         frameRate: 10,
         repeat: -1
       });
@@ -172,6 +172,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   move() {
+    if ((this.scene as GameScene).isTouchDevice) return;
     const pointer = this.scene.input.activePointer;
     const pointerWorldPos = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
 
