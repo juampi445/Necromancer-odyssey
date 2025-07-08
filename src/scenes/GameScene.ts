@@ -216,7 +216,7 @@ createJoystick() {
 onJoystickPointerDown(pointer: Phaser.Input.Pointer) {
   if (pointer.y > window.innerHeight / 2 && this.joystickPointerId == null) {
     this.joystickPointerId = pointer.id;
-
+    this.joystickValue = { x: 0, y: 0 }; //reset joystick value
     this.joystickBg!.setPosition(pointer.x, pointer.y).setVisible(true);
     this.joystickThumb!.setPosition(pointer.x, pointer.y).setVisible(true);
   }
