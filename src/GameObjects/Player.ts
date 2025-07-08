@@ -50,7 +50,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     if (!this.scene.anims.exists('idle')) {
       this.scene.anims.create({
         key: 'idle',
-        frames: this.anims.generateFrameNumbers('player', { start: 0, end: (this.scene as GameScene).isTouchDevice ? 49 : 10 }),
+        frames: this.anims.generateFrameNumbers('player', { start: 0, end: 49 }),
         frameRate: 10,
         repeat: -1
       });
