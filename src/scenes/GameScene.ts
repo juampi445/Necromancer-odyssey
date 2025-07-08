@@ -226,6 +226,7 @@ onJoystickPointerDown(pointer: Phaser.Input.Pointer) {
 onJoystickPointerUp(pointer: Phaser.Input.Pointer) {
   if (pointer.id === this.joystickPointerId) {
     this.joystickValue = { x: 0, y: 0 };
+    this.player.setVelocity(0);
     this.joystickThumb!.setPosition(this.joystickBg!.x, this.joystickBg!.y);
     this.joystickPointerId = undefined;
 
