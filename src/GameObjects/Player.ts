@@ -33,7 +33,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.create();
     this.skills = [
       new Comet(scene, this), // Primera habilidad
-       // Segunda habilidad
+      // Segunda habilidad
       // Podrías agregar más habilidades aquí
       // new Aura(scene, this) // Habilidad de área de efecto
       // new Venom(scene, this) // Habilidad de área de efecto
@@ -171,49 +171,49 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   move() {
-      const pointer = this.scene.input.activePointer;
-      const pointerWorldPos = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
-  
-      const distance = Phaser.Math.Distance.Between(this.x, this.y, pointerWorldPos.x, pointerWorldPos.y);
-      if (distance > 100 && !this.dead) {
-        this.scene.physics.moveToObject(this, pointerWorldPos, 120);
-        if (pointerWorldPos.x < this.x) {
-          this.setFlipX(true);
-        } else {
-          this.setFlipX(false);
-        }
-        this.walk();
+    const pointer = this.scene.input.activePointer;
+    const pointerWorldPos = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
+
+    const distance = Phaser.Math.Distance.Between(this.x, this.y, pointerWorldPos.x, pointerWorldPos.y);
+    if (distance > 100 && !this.dead) {
+      this.scene.physics.moveToObject(this, pointerWorldPos, 120);
+      if (pointerWorldPos.x < this.x) {
+        this.setFlipX(true);
       } else {
-        (this.body as Phaser.Physics.Arcade.Body).setVelocity(0);
-        this.idle();
+        this.setFlipX(false);
       }
+      this.walk();
+    } else {
+      (this.body as Phaser.Physics.Arcade.Body).setVelocity(0);
+      this.idle();
+    }
   }
 
   moveWithJoystick(joystickValue: { x: number, y: number }) {
-  if (!this.canMove || this.dead) return;
+    if (!this.canMove || this.dead) return;
 
-  const magnitude = Math.sqrt(joystickValue.x ** 2 + joystickValue.y ** 2);
-  if (magnitude < 10) {
-    (this.body as Phaser.Physics.Arcade.Body).setVelocity(0);
-    this.idle();
-    return;
+    const magnitude = Math.sqrt(joystickValue.x ** 2 + joystickValue.y ** 2);
+    if (magnitude < 10) {
+      (this.body as Phaser.Physics.Arcade.Body).setVelocity(0);
+      this.idle();
+      return;
+    }
+
+    const normalizedX = joystickValue.x / magnitude;
+    const normalizedY = joystickValue.y / magnitude;
+
+    const speed = 120;
+
+    this.setVelocity(normalizedX * speed, normalizedY * speed);
+
+    if (normalizedX < 0) {
+      this.setFlipX(true);
+    } else {
+      this.setFlipX(false);
+    }
+
+    this.walk();
   }
-
-  const normalizedX = joystickValue.x / magnitude;
-  const normalizedY = joystickValue.y / magnitude;
-
-  const speed = 120;
-
-  this.setVelocity(normalizedX * speed, normalizedY * speed);
-
-  if (normalizedX < 0) {
-    this.setFlipX(true);
-  } else {
-    this.setFlipX(false);
-  }
-
-  this.walk();
-}
 
 
   update() {

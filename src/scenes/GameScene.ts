@@ -193,13 +193,13 @@ export class GameScene extends Phaser.Scene {
   }
 
 createJoystick() {
-  this.joystickBg = this.add.image(100, 100, 'joystick-bg')
+  this.joystickBg = this.add.image(40, 40, 'joystick-bg')
     .setOrigin(0.5)
     .setScrollFactor(0)
     .setVisible(false)
     .setDepth(100);
 
-  this.joystickThumb = this.add.image(100, 100, 'joystick-thumb')
+  this.joystickThumb = this.add.image(40, 40, 'joystick-thumb')
     .setOrigin(0.5)
     .setScrollFactor(0)
     .setVisible(false)
@@ -212,7 +212,7 @@ createJoystick() {
 
 
 onJoystickPointerDown(pointer: Phaser.Input.Pointer) {
-  if (pointer.x < window.innerWidth / 2 && this.joystickPointerId == null) {
+  if (pointer.y > window.innerHeight / 2 && this.joystickPointerId == null) {
     this.joystickPointerId = pointer.id;
 
     this.joystickBg!.setPosition(pointer.x, pointer.y).setVisible(true);
