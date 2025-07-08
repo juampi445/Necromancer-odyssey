@@ -3,7 +3,7 @@ import Player from '../GameObjects/Player';
 // import Skeleton from '@/GameObjects/Skeleton';
 import Projectile from '@/GameObjects/Projectile';
 import { SkillsManager } from '@/GameObjects/SkillsManager';
-import { Aura, Comet, Comet2, Lightning, Venom } from '@/GameObjects/Skills';
+import { Aura, Comet, Lightning, Venom } from '@/GameObjects/Skills';
 import Goblin from '@/GameObjects/Goblin';
 import Skeleton from '@/GameObjects/Skeleton';
 import Eye from '@/GameObjects/Eye';
@@ -40,13 +40,13 @@ export class GameScene extends Phaser.Scene {
 
   create() {
     this.physics.world.setBounds(0, 0, window.innerWidth * 4, window.innerHeight * 4);
+    this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     this.player = new Player(this, this.physics.world.bounds.width / 2, this.physics.world.bounds.height / 2, 'player');
     this.createSkillsManager();
     this.enemiesGroup = this.physics.add.group();
     this.projectiles = this.physics.add.group();
     this.areaOfEffect = this.physics.add.group();
     this.coins = this.physics.add.group();
-    this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     this.createBg();
     this.enemiesGroup.runChildUpdate = true;
     this.enemiesByLevel = {
@@ -133,8 +133,8 @@ export class GameScene extends Phaser.Scene {
         new Comet(this, this.player),
         new Aura(this, this.player),
         new Venom(this, this.player),
-        new Lightning(this, this.player),
-        new Comet2(this, this.player),
+        new Lightning(this, this.player)
+        // new Comet2(this, this.player),
       ]
     });
   }
@@ -216,7 +216,7 @@ createJoystick() {
 onJoystickPointerDown(pointer: Phaser.Input.Pointer) {
   if (pointer.y > window.innerHeight / 2 && this.joystickPointerId == null) {
     this.joystickPointerId = pointer.id;
-    this.joystickValue = { x: 0, y: 0 }; //reset joystick value
+
     this.joystickBg!.setPosition(pointer.x, pointer.y).setVisible(true);
     this.joystickThumb!.setPosition(pointer.x, pointer.y).setVisible(true);
   }
@@ -226,6 +226,7 @@ onJoystickPointerDown(pointer: Phaser.Input.Pointer) {
 onJoystickPointerUp(pointer: Phaser.Input.Pointer) {
   if (pointer.id === this.joystickPointerId) {
     this.joystickValue = { x: 0, y: 0 };
+    this.player.setVelocity(0, 0);
     this.joystickThumb!.setPosition(this.joystickBg!.x, this.joystickBg!.y);
     this.joystickPointerId = undefined;
 
