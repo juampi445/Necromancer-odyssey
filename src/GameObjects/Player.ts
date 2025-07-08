@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 // import Projectile from './Projectile'; // Import the new Projectile class
 import Skill from './Skill';
 import { Comet } from './Skills';
+import GameScene from '@/scenes/GameScene';
 
 class Player extends Phaser.Physics.Arcade.Sprite {
   canMove: boolean;
@@ -49,7 +50,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     if (!this.scene.anims.exists('idle')) {
       this.scene.anims.create({
         key: 'idle',
-        frames: this.anims.generateFrameNumbers('player', { start: 0, end: 49 }),
+        frames: this.anims.generateFrameNumbers('player', { start: 0, end: (this.scene as GameScene).isTouchDevice ? 49 : 19 }),
         frameRate: 10,
         repeat: -1
       });

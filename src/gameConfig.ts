@@ -9,10 +9,6 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   width: window.innerWidth,
   height: window.innerHeight,
   parent: 'game-container',
-  render: {
-    transparent: true,
-    premultipliedAlpha: false
-  },
   physics: {
     default: 'arcade',
     arcade: {
