@@ -27,6 +27,12 @@ export class GameScene extends Phaser.Scene {
   enemiesSpawnedCount: number = 0;
   specialEnemyThreshold: number = 10;
   totalCoins: number = 0;
+  isTouchDevice: boolean = false;
+  joystickBg?: Phaser.GameObjects.Image;
+  joystickThumb?: Phaser.GameObjects.Image;
+  joystickPointerId?: number;
+  joystickValue = { x: 0, y: 0 };
+
 
   constructor() {
     super({ key: 'GameScene' });
@@ -41,6 +47,7 @@ export class GameScene extends Phaser.Scene {
     this.projectiles = this.physics.add.group();
     this.areaOfEffect = this.physics.add.group();
     this.coins = this.physics.add.group();
+    this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     this.enemiesGroup.runChildUpdate = true;
     this.enemiesByLevel = {
       1: [Skeleton],
@@ -87,6 +94,7 @@ export class GameScene extends Phaser.Scene {
     });
     this.cameras.main.startFollow(this.player, false, 0.5, 0.5);
     this.setupColliders();
+    this.createJoystick();
 
     this.game.events.on('game-over', () => {
       this.spawnTimer?.remove(false);
@@ -96,7 +104,8 @@ export class GameScene extends Phaser.Scene {
 
   createBg() {
     const bounds = this.physics.world.bounds;
-    this.createTileGrid(bounds.width, bounds.height, window.innerWidth / 16, 'brick_2');
+    const tileWidth = !this.isTouchDevice ? window.innerWidth / 16 : window.innerWidth / 32;
+    this.createTileGrid(bounds.width, bounds.height, tileWidth, 'brick_2');
     const mask = this.add.graphics();
     mask.fillStyle(0x7b7554, 0.6);
     mask.fillRect(
@@ -105,7 +114,6 @@ export class GameScene extends Phaser.Scene {
         bounds.width + window.innerWidth * 2,
         bounds.height + window.innerHeight * 2
       );
-      
   }
 
   createTileGrid(width: number, height: number, tileWidth: number, texture: string) {
@@ -181,6 +189,76 @@ export class GameScene extends Phaser.Scene {
         enemyObj.die();
         console.log('Enemy defeated:', enemyObj);
       });
+    }
+  }
+
+createJoystick() {
+  this.joystickBg = this.add.image(100, 100, 'joystick-bg')
+    .setOrigin(0.5)
+    .setScrollFactor(0)
+    .setVisible(false)
+    .setDepth(100);
+
+  this.joystickThumb = this.add.image(100, 100, 'joystick-thumb')
+    .setOrigin(0.5)
+    .setScrollFactor(0)
+    .setVisible(false)
+    .setDepth(101);
+
+  this.input.on('pointerdown', this.onJoystickPointerDown, this);
+  this.input.on('pointerup', this.onJoystickPointerUp, this);
+  this.input.on('pointermove', this.onJoystickPointerMove, this);
+}
+
+
+onJoystickPointerDown(pointer: Phaser.Input.Pointer) {
+  if (pointer.x < window.innerWidth / 2 && this.joystickPointerId == null) {
+    this.joystickPointerId = pointer.id;
+
+    this.joystickBg!.setPosition(pointer.x, pointer.y).setVisible(true);
+    this.joystickThumb!.setPosition(pointer.x, pointer.y).setVisible(true);
+  }
+}
+
+
+onJoystickPointerUp(pointer: Phaser.Input.Pointer) {
+  if (pointer.id === this.joystickPointerId) {
+    this.joystickValue = { x: 0, y: 0 };
+    this.joystickThumb!.setPosition(this.joystickBg!.x, this.joystickBg!.y);
+    this.joystickPointerId = undefined;
+
+    this.joystickBg?.setVisible(false);
+    this.joystickThumb?.setVisible(false);
+
+    this.player.idle();
+  }
+}
+
+
+  onJoystickPointerMove(pointer: Phaser.Input.Pointer) {
+    if (pointer.id === this.joystickPointerId) {
+      const dx = pointer.x - this.joystickBg!.x;
+      const dy = pointer.y - this.joystickBg!.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const maxDistance = this.joystickBg!.displayWidth / 2;
+
+      if (distance > maxDistance) {
+        const angle = Math.atan2(dy, dx);
+        this.joystickValue.x = Math.cos(angle) * maxDistance;
+        this.joystickValue.y = Math.sin(angle) * maxDistance;
+      } else {
+        this.joystickValue.x = dx;
+        this.joystickValue.y = dy;
+      }
+
+      this.joystickThumb!.setPosition(
+        this.joystickBg!.x + this.joystickValue.x,
+        this.joystickBg!.y + this.joystickValue.y
+      );
+
+      if (this.player.canMove) {
+        this.player.moveWithJoystick(this.joystickValue);
+      }
     }
   }
 

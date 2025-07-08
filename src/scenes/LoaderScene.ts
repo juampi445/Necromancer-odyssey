@@ -84,6 +84,10 @@ class LoaderScene extends Phaser.Scene {
 
     //MODAL
     this.load.image('modal-background', 'assets/Modal/bg.svg');
+
+    //JOYSTICK
+    this.load.image('joystick-bg', 'assets/joystick/JoystickSplitted.png');
+    this.load.image('joystick-thumb', 'assets/joystick/LargeHandleFilledGrey.png');
   }
 
   create() {

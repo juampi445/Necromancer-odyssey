@@ -189,10 +189,39 @@ class Player extends Phaser.Physics.Arcade.Sprite {
       }
   }
 
+  moveWithJoystick(joystickValue: { x: number, y: number }) {
+  if (!this.canMove || this.dead) return;
+
+  const magnitude = Math.sqrt(joystickValue.x ** 2 + joystickValue.y ** 2);
+  if (magnitude < 10) {
+    (this.body as Phaser.Physics.Arcade.Body).setVelocity(0);
+    this.idle();
+    return;
+  }
+
+  const normalizedX = joystickValue.x / magnitude;
+  const normalizedY = joystickValue.y / magnitude;
+
+  const speed = 120;
+
+  this.setVelocity(normalizedX * speed, normalizedY * speed);
+
+  if (normalizedX < 0) {
+    this.setFlipX(true);
+  } else {
+    this.setFlipX(false);
+  }
+
+  this.walk();
+}
+
+
   update() {
     if (this.canMove) {
       // Lógica de movimiento
-      this.move()
+      if (this.canMove && !this.scene.input.pointer1.isDown) {
+        this.move(); // fallback to mouse movement only if no touch input
+      }
     }
 
     if (this.health <= 0 && !this.dead) {
