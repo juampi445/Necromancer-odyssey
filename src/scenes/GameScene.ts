@@ -40,7 +40,6 @@ export class GameScene extends Phaser.Scene {
 
   create() {
     this.physics.world.setBounds(0, 0, window.innerWidth * 4, window.innerHeight * 4);
-    this.createBg();
     this.player = new Player(this, this.physics.world.bounds.width / 2, this.physics.world.bounds.height / 2, 'player');
     this.createSkillsManager();
     this.enemiesGroup = this.physics.add.group();
@@ -48,6 +47,7 @@ export class GameScene extends Phaser.Scene {
     this.areaOfEffect = this.physics.add.group();
     this.coins = this.physics.add.group();
     this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    this.createBg();
     this.enemiesGroup.runChildUpdate = true;
     this.enemiesByLevel = {
       1: [Skeleton],
@@ -104,7 +104,7 @@ export class GameScene extends Phaser.Scene {
 
   createBg() {
     const bounds = this.physics.world.bounds;
-    const tileWidth = !this.isTouchDevice ? window.innerWidth / 16 : window.innerWidth / 32;
+    const tileWidth = !this.isTouchDevice ? window.innerWidth / 16 : window.innerWidth / 64;
     this.createTileGrid(bounds.width, bounds.height, tileWidth, 'brick_2');
     const mask = this.add.graphics();
     mask.fillStyle(0x7b7554, 0.6);
@@ -193,17 +193,19 @@ export class GameScene extends Phaser.Scene {
   }
 
 createJoystick() {
-  this.joystickBg = this.add.image(40, 40, 'joystick-bg')
+  this.joystickBg = this.add.image(100, 100, 'joystick-bg')
     .setOrigin(0.5)
     .setScrollFactor(0)
     .setVisible(false)
-    .setDepth(100);
+    .setDepth(100)
+    .setScale(0.4)
 
-  this.joystickThumb = this.add.image(40, 40, 'joystick-thumb')
+  this.joystickThumb = this.add.image(100, 100, 'joystick-thumb')
     .setOrigin(0.5)
     .setScrollFactor(0)
     .setVisible(false)
-    .setDepth(101);
+    .setDepth(101)
+    .setScale(0.4)
 
   this.input.on('pointerdown', this.onJoystickPointerDown, this);
   this.input.on('pointerup', this.onJoystickPointerUp, this);
