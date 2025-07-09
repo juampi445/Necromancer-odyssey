@@ -4,6 +4,7 @@ import GameScene from '@/scenes/GameScene';
 class Coin extends Phaser.Physics.Arcade.Sprite {
     value: number;
     baseValue: number = 10;
+    collected: boolean = false;
 
     constructor(scene: GameScene, x: number, y: number, texture: string = 'coin', enemyDifficulty: number = 1) {
         super(scene, x, y, texture);
@@ -67,7 +68,8 @@ class Coin extends Phaser.Physics.Arcade.Sprite {
     }
 
     finishCollecting(scene: GameScene) {
-        if (scene.game) {
+        if (scene.game && this.collected === false) {
+            this.collected = true;
             scene.game.events.emit('update-coins', scene.totalCoins + this.value);
             scene.totalCoins += this.value;
             this.destroy();

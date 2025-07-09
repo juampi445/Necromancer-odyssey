@@ -38,6 +38,7 @@ class LoaderScene extends Phaser.Scene {
     this.load.image('brick_2', '/assets/brickwall_2.jpg');
 
     //PLAYER
+    // this.load.spritesheet('player', '/assets/Necromancer/Idle/spr_NecromancerIdle_strip50.png', { frameWidth: 4800/50, frameHeight: 96 });
     this.load.spritesheet('player', '/assets/Necromancer/Idle/prueba.png', { frameWidth: 96, frameHeight: 96 });
     this.load.spritesheet('walk', '/assets/Necromancer/Walk/spr_NecromancerWalk_strip10.png', { frameWidth: 960/10, frameHeight: 96 });  
     this.load.spritesheet('spawn', '/assets/Necromancer/Spawn/spr_NecromancerSpawn_strip20.png', { frameWidth: 2560/20, frameHeight: 128 });  

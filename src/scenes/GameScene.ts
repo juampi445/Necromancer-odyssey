@@ -74,6 +74,8 @@ export class GameScene extends Phaser.Scene {
           this.spawnEnemies()
       }
     });
+    this.createJoystick();
+
     this.events.on('level-up', () => {
       // const minDelay = 500;
       // const maxDelay = 3000;
@@ -90,11 +92,11 @@ export class GameScene extends Phaser.Scene {
           this.spawnEnemies()
         }
       });
+      this.onJoystickPointerUp();
       console.log(`Spawn delay updated to ${newDelay}ms for level ${this.player.lvl}`);
     });
     this.cameras.main.startFollow(this.player, false, 0.5, 0.5);
     this.setupColliders();
-    this.createJoystick();
 
     this.game.events.on('game-over', () => {
       this.spawnTimer?.remove(false);
@@ -223,8 +225,8 @@ onJoystickPointerDown(pointer: Phaser.Input.Pointer) {
 }
 
 
-onJoystickPointerUp(pointer: Phaser.Input.Pointer) {
-  if (pointer.id === this.joystickPointerId) {
+onJoystickPointerUp(pointer?: Phaser.Input.Pointer) {
+  if (pointer?.id === this.joystickPointerId) {
     this.joystickValue = { x: 0, y: 0 };
     this.player.setVelocity(0);
     this.joystickThumb!.setPosition(this.joystickBg!.x, this.joystickBg!.y);
