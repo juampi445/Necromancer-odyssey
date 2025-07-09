@@ -194,50 +194,50 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-createJoystick() {
-  this.joystickBg = this.add.image(100, 100, 'joystick-bg')
-    .setOrigin(0.5)
-    .setScrollFactor(0)
-    .setVisible(false)
-    .setDepth(100)
-    .setScale(0.4)
+  createJoystick() {
+    this.joystickBg = this.add.image(100, 100, 'joystick-bg')
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setVisible(false)
+      .setDepth(100)
+      .setScale(0.4)
 
-  this.joystickThumb = this.add.image(100, 100, 'joystick-thumb')
-    .setOrigin(0.5)
-    .setScrollFactor(0)
-    .setVisible(false)
-    .setDepth(101)
-    .setScale(0.4)
+    this.joystickThumb = this.add.image(100, 100, 'joystick-thumb')
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setVisible(false)
+      .setDepth(101)
+      .setScale(0.4)
 
-  this.input.on('pointerdown', this.onJoystickPointerDown, this);
-  this.input.on('pointerup', this.onJoystickPointerUp, this);
-  this.input.on('pointermove', this.onJoystickPointerMove, this);
-}
-
-
-onJoystickPointerDown(pointer: Phaser.Input.Pointer) {
-  if (pointer.y > window.innerHeight / 2 && this.joystickPointerId == null) {
-    this.joystickPointerId = pointer.id;
-
-    this.joystickBg!.setPosition(pointer.x, pointer.y).setVisible(true);
-    this.joystickThumb!.setPosition(pointer.x, pointer.y).setVisible(true);
+    this.input.on('pointerdown', this.onJoystickPointerDown, this);
+    this.input.on('pointerup', this.onJoystickPointerUp, this);
+    this.input.on('pointermove', this.onJoystickPointerMove, this);
   }
-}
 
 
-onJoystickPointerUp(pointer?: Phaser.Input.Pointer) {
-  if (pointer?.id === this.joystickPointerId) {
-    this.joystickValue = { x: 0, y: 0 };
-    this.player.setVelocity(0);
-    this.joystickThumb!.setPosition(this.joystickBg!.x, this.joystickBg!.y);
-    this.joystickPointerId = undefined;
+  onJoystickPointerDown(pointer: Phaser.Input.Pointer) {
+    if (pointer.y > window.innerHeight / 2 && this.joystickPointerId == null) {
+      this.joystickPointerId = pointer.id;
 
-    this.joystickBg?.setVisible(false);
-    this.joystickThumb?.setVisible(false);
-
-    this.player.idle();
+      this.joystickBg!.setPosition(pointer.x, pointer.y).setVisible(true);
+      this.joystickThumb!.setPosition(pointer.x, pointer.y).setVisible(true);
+    }
   }
-}
+
+
+  onJoystickPointerUp() {
+    // if (pointer?.id === this.joystickPointerId) {
+      this.joystickValue = { x: 0, y: 0 };
+      this.player.setVelocity(0);
+      this.joystickThumb!.setPosition(this.joystickBg!.x, this.joystickBg!.y);
+      this.joystickPointerId = undefined;
+
+      this.joystickBg?.setVisible(false);
+      this.joystickThumb?.setVisible(false);
+
+      this.player.idle();
+    // }
+  }
 
 
   onJoystickPointerMove(pointer: Phaser.Input.Pointer) {
