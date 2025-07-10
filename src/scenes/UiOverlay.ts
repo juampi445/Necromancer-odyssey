@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import Skill from '../GameObjects/Skill';
-import SkillsModal from '@/GameObjects/SkillsModal';
+import SkillsModal from '@/scenes/SkillsModal';
 import GameScene from './GameScene';
 
 class UIOverlay extends Phaser.Scene {
@@ -21,6 +21,8 @@ class UIOverlay extends Phaser.Scene {
     private modalBackground!: Phaser.GameObjects.Graphics;
     private modalText!: Phaser.GameObjects.Text;
 
+    isTouchDevice: boolean = false;
+
     constructor() {
         super({ key: 'UIOverlay' });
     }
@@ -32,6 +34,7 @@ class UIOverlay extends Phaser.Scene {
     }
 
     create() {
+        this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         this.healthBar = this.add.graphics();
         this.healthText = this.add.text(0, 0, '', {
             fontSize: '18px',
@@ -131,11 +134,15 @@ class UIOverlay extends Phaser.Scene {
             this.healthBar.fillRoundedRect(x, y, barWidth * ratio, barHeight, 8);
         }
 
-        const healthText = this.playerHealth > 0 ? this.playerHealth : 0;
-
-        this.healthText.setText(`HP: ${healthText} / 100`);
-        this.healthText.setPosition(x + 10, y + 2);
+        if (!this.isTouchDevice) {
+            const healthText = this.playerHealth > 0 ? this.playerHealth : 0;
+            this.healthText.setText(`HP: ${healthText} / 100`);
+            this.healthText.setPosition(x + 10, y + 2);
+        } else {
+            this.healthText.setText('');
+        }
     }
+
 
     updateExpBar() {
         const camera = this.cameras.main;
@@ -145,22 +152,32 @@ class UIOverlay extends Phaser.Scene {
         const x = camera.scrollX + camera.width - barWidth - 20;
         const y = camera.scrollY + 10;
 
-        const expInLevel = this.experience % (100 * Math.ceil(Math.pow(1.5, this.level - 1)));
-        const ratio = expInLevel / (100 * Math.ceil(Math.pow(1.5, this.level - 1)));
-        const nextLevelXP = 100 * Math.ceil(Math.pow(1.5, this.level - 1));
+        const levelXP = 100 * Math.ceil(Math.pow(1.5, this.level - 1));
+        const expInLevel = this.experience % levelXP;
+        const ratio = Phaser.Math.Clamp(expInLevel / levelXP, 0, 1);
+        const fillWidth = Math.floor(barWidth * ratio);
 
         this.expBar.clear();
         this.expBar.fillStyle(0x222222);
         this.expBar.fillRoundedRect(x, y, barWidth, barHeight, 8);
-        this.expBar.fillStyle(0x00aaff);
-        this.expBar.fillRoundedRect(x, y, barWidth * ratio, barHeight, 8);
 
-        this.expText.setText(`XP: ${this.experience} / ${nextLevelXP}`);
-        this.expText.setPosition(x + 10, y + 2);
+        if (fillWidth > 0) {
+            this.expBar.fillStyle(0x00aaff);
+            this.expBar.fillRoundedRect(x, y, fillWidth, barHeight, 8);
+        }
 
-        this.levelText.setText(`Lv. ${this.level}`);
-        this.levelText.setPosition(x, y + barHeight + 5);
+        if (!this.isTouchDevice) {
+            this.expText.setText(`XP: ${this.experience} / ${levelXP}`);
+            this.expText.setPosition(x + 10, y + 2);
+
+            this.levelText.setText(`Lv. ${this.level}`);
+            this.levelText.setPosition(x, y + barHeight + 5);
+        } else {
+            this.expText.setText('');
+            this.levelText.setText('');
+        }
     }
+
 
     resizeUI() {
         this.updateHealthBar();
@@ -212,7 +229,7 @@ class UIOverlay extends Phaser.Scene {
         playerSkills: Skill[],
         onSelect: (skillType: string, canUnlock: boolean, canUpgrade: boolean) => void
     ) {
-       this.input.manager.pointers.forEach(p => p.reset());
+        this.input.manager.pointers.forEach(p => p.reset());
 
         const modalSceneKey = 'SkillsModal';
 

@@ -1,4 +1,3 @@
-// ShopScene.ts
 export default class ShopScene extends Phaser.Scene {
   constructor() {
     super('ShopScene');
@@ -7,31 +6,44 @@ export default class ShopScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
-    // Green background
-    this.add.rectangle(width / 2, height / 2, width, height, 0x28a745);
+    // Background texture
+    this.add.tileSprite(width / 2, height / 2, width, height, 'modal-bg');
 
-    this.add.text(width / 2, 80, 'Tienda', {
+    // Beige overlay filter
+    this.add.rectangle(width / 2, height / 2, width, height, 0x797562, 0.75);
+
+    // Title
+    this.add.text(width / 2, 80, 'Shop', {
       fontSize: '36px',
-      color: '#ffffff'
+      color: '#333333',
+      fontStyle: 'bold'
     }).setOrigin(0.5);
 
-    const items = ['Velocidad', 'Escudo', 'Vida Extra'];
+    const buttonWidth = 240;
+    const buttonFont = '22px';
+    const buttonPadding = { x: 20, y: 10 };
+
+    const items = ['Speed', 'Shield', 'Extra Life'];
 
     items.forEach((item, index) => {
       this.add.text(width / 2, 160 + index * 60, item, {
-        fontSize: '24px',
+        fontSize: buttonFont,
         color: '#000000',
         backgroundColor: '#ffffff',
-        padding: { x: 20, y: 10 }
+        padding: buttonPadding,
+        fixedWidth: buttonWidth,
+        align: 'center'
       }).setOrigin(0.5);
     });
 
     // Back button
-    this.add.text(width / 2, height - 100, '⬅ Volver', {
-      fontSize: '24px',
+    this.add.text(width / 2, height - 100, 'Go Back', {
+      fontSize: buttonFont,
       color: '#ffffff',
       backgroundColor: '#6c757d',
-      padding: { x: 20, y: 10 }
+      padding: buttonPadding,
+      fixedWidth: buttonWidth,
+      align: 'center'
     }).setOrigin(0.5).setInteractive().on('pointerdown', () => {
       this.scene.start('MainMenuScene');
     });

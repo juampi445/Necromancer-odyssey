@@ -5,6 +5,7 @@ import UIOverlay from './scenes/UiOverlay';
 import PauseModalScene from './scenes/PauseModalScene';
 import MainMenuScene from './scenes/MainMenuScene';
 import ShopScene from './scenes/ShopScene';
+import SkillsModal from './scenes/SkillsModal';
 // import SkillsModal from './GameObjects/SkillsModal';
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -26,7 +27,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [LoaderScene, MainMenuScene, GameScene, ShopScene, UIOverlay, PauseModalScene],
+  scene: [LoaderScene, MainMenuScene, GameScene, ShopScene, UIOverlay, PauseModalScene, SkillsModal],
 };
 
 export default gameConfig;
