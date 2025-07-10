@@ -149,8 +149,7 @@ export default class SkillsModal extends Phaser.Scene {
                 bgRect.on('pointerup', () => {
                     if (!this.hasDragged) {
                         this.onSelect(skill.type, canUnlock, canUpgrade);
-                        this.scene.stop();
-                        this.scene.remove('SkillsModal');
+                        this.scene.stop('SkillsModal');
                     }
                 });
             }

@@ -6,6 +6,7 @@ export type GameCanvasProps = {
   onGoBack: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const GameCanvas: React.FC<GameCanvasProps> = ({ onGoBack }) => {
   const gameContainer = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -28,7 +29,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGoBack }) => {
   return (
     <>
       <div id="game-container" ref={gameContainer} style={{ width: '100%', height: '100%' }} />
-      <button style={{ position: 'absolute', left: 0, bottom: 0 }} onClick={onGoBack}>Go Back</button>
+      {/* <button style={{ position: 'absolute', left: 0, bottom: 0 }} onClick={onGoBack}>Go Back</button> */}
     </>
   );
 };

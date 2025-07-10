@@ -89,12 +89,15 @@ class LoaderScene extends Phaser.Scene {
     //JOYSTICK
     this.load.image('joystick-bg', 'assets/joystick/JoystickSplitted.png');
     this.load.image('joystick-thumb', 'assets/joystick/LargeHandleFilledGrey.png');
+
+    //TEXTURES
+    this.load.image('modal-bg', 'assets/textures/Grey_background_59.png');
   }
 
   create() {
     // Cuando se haya cargado, pasar a la siguiente escena
     setTimeout(() => {
-      this.scene.start('GameScene');
+      this.scene.start('MainMenuScene'); // Cambia a la escena del menú principal
     } , 1000); // Espera 1 segundo antes de iniciar la siguiente escena
   }
 }

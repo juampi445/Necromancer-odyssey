@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import Skill from '../GameObjects/Skill';
 import SkillsModal from '@/GameObjects/SkillsModal';
+import GameScene from './GameScene';
 
 class UIOverlay extends Phaser.Scene {
     private healthBar!: Phaser.GameObjects.Graphics;
@@ -21,7 +22,13 @@ class UIOverlay extends Phaser.Scene {
     private modalText!: Phaser.GameObjects.Text;
 
     constructor() {
-        super({ key: 'UIOverlay', active: true });
+        super({ key: 'UIOverlay' });
+    }
+
+    init() {
+        this.playerHealth = 100;
+        this.experience = 0;
+        this.level = 1;
     }
 
     create() {
@@ -46,13 +53,32 @@ class UIOverlay extends Phaser.Scene {
         const camera = this.cameras.main;
         this.coinContainer = this.add.container(camera.midPoint.x, camera.scrollY + 10).setDepth(10);
         const coinBg = this.add.graphics();
-        coinBg.fillStyle(0x000000, 0.7);
-        coinBg.fillRoundedRect(-60, 0, 120, 32, 16);
-        this.coinText = this.add.text(0, 5, '0', {
+        coinBg.fillStyle(0x222222, 1);
+        coinBg.fillRoundedRect(-60, 0, 120, 24, 8);
+        this.coinText = this.add.text(0, 4, `${(this.scene.get('GameScene') as GameScene).totalCoins}`, {
             fontSize: '20px',
             color: '#ffffff',
         }).setOrigin(0.5, 0);
         this.coinContainer.add([coinBg, this.coinText]);
+        const pauseButton = this.add.text(camera.width - 70, camera.height - 50, '||', {
+            fontSize: '24px',
+            color: '#ffffff',
+            backgroundColor: '#222222',
+            padding: { x: 10, y: 5 },
+        }).setInteractive();
+
+        pauseButton.on('pointerup', () => {
+            this.scene.pause('GameScene'); // pauses GameScene
+            if (!this.scene.isActive('PauseModalScene')) {
+                this.scene.launch('PauseModalScene');
+                this.scene.bringToTop('PauseModalScene');
+            } else {
+                this.scene.stop('PauseModalScene');
+                this.scene.launch('PauseModalScene');
+                this.scene.bringToTop('PauseModalScene');
+            }
+        });
+
 
         // Events
         this.game.events.on('update-health', this.handleHealthUpdate, this);
@@ -186,16 +212,20 @@ class UIOverlay extends Phaser.Scene {
         playerSkills: Skill[],
         onSelect: (skillType: string, canUnlock: boolean, canUpgrade: boolean) => void
     ) {
-        // Reset all active pointer states (fixes stuck touch issue on mobile)
-        this.input.manager.pointers.forEach(p => p.reset());
+       this.input.manager.pointers.forEach(p => p.reset());
 
-        // Ensure SkillsModal scene is registered only once
-        if (!this.scene.get('SkillsModal')) {
-            this.scene.add('SkillsModal', SkillsModal, false);
+        const modalSceneKey = 'SkillsModal';
+
+        if (!this.scene.get(modalSceneKey)) {
+            this.scene.add(modalSceneKey, SkillsModal, false);
         }
 
-        this.scene.bringToTop('SkillsModal');
-        this.scene.launch('SkillsModal', { skills, playerSkills, onSelect });
+        if (this.scene.isActive(modalSceneKey)) {
+            this.scene.stop(modalSceneKey);
+        }
+
+        this.scene.launch(modalSceneKey, { skills, playerSkills, onSelect });
+        this.scene.bringToTop(modalSceneKey);
     }
 
 
