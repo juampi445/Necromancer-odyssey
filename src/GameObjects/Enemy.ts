@@ -21,6 +21,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
   baseDamage: number = 10;
   baseHealth: number = 10;
   isSpecialEnemy: boolean = false;
+  specialAura: Phaser.GameObjects.Sprite | null = null;
 
   constructor(scene: GameScene, x: number, y: number, texture: string = 'skeleton', group: Phaser.Physics.Arcade.Group, isSpecialEnemy: boolean = false) {
     super(scene, x, y, texture);
@@ -35,9 +36,15 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.canMove = false;
     // this.scene.game.events.on('game-over', this.gameOver, this);
     if (isSpecialEnemy) {
-      this.baseColor = 0x66ccff;
+      this.specialAura = scene.add.sprite(x, y, 'special-aura');
+      this.specialAura.setScale(0.12);
+      this.specialAura.setOrigin(0.6, 0.5);
+
+      // Set base color with reduced opacity (alpha ~ 0.5)
+      this.baseColor = 0x8866ccff; // ARGB: 0x88 (alpha), 66ccff (color)
       this.setTint(this.baseColor);
       this.baseHealth = this.baseHealth * 10;
+      this.setDepth(this.specialAura.depth + 1)
     }
     this.spawn();
   }
@@ -136,6 +143,10 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setVelocity(0);
     this.anims.stop();
     this.play(this.deathAnimKey!);
+    if (this.specialAura) {
+      this.specialAura.destroy();
+      this.specialAura = null;
+    }
     this.once('animationcomplete', () => {
       if (this.isSpecialEnemy) this.dropCoin();
       this.group.remove(this, true, true); // ya destruye
@@ -193,6 +204,9 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   update() {
+    if (this.specialAura) {
+      this.specialAura.setPosition(this.x, this.y);
+    }
     if (this.canMove && !this.dead) {
       //@ts-expect-error body is private
       const playerWorldPos = this.scene.player.body.position;

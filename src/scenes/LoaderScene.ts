@@ -40,6 +40,7 @@ class LoaderScene extends Phaser.Scene {
     //MAP
     this.load.image('brick_1', '/assets/brickwall_.jpg');
     this.load.image('brick_2', '/assets/brickwall_2.jpg');
+    this.load.image('wall', 'assets/dungeon-brick.png');
 
     //PLAYER
     // this.load.spritesheet('player', '/assets/Necromancer/Idle/spr_NecromancerIdle_strip50.png', { frameWidth: 4800/50, frameHeight: 96 });
@@ -49,6 +50,8 @@ class LoaderScene extends Phaser.Scene {
     this.load.spritesheet('death', '/assets/Necromancer/Death/spr_NecromancerDeath_strip52.png', { frameWidth: 4992/52, frameHeight: 96 });  
 
     //ENEMIES
+    this.load.image('special-aura', '/assets/enemies/special-aura.png');
+
     this.load.spritesheet('skeleton', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Idle.png', { frameWidth: 768/8, frameHeight: 64 });
     this.load.spritesheet('skeleton-walk', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Walk.png', { frameWidth: 960/10, frameHeight: 64 });  
     this.load.spritesheet('skeleton-attack', '/assets/Skeletons_Free_Pack/Skeleton_Sword/Skeleton_White/Skeleton_With_VFX/Skeleton_01_White_Attack1.png', { frameWidth: 960/10, frameHeight: 64 });
@@ -95,7 +98,9 @@ class LoaderScene extends Phaser.Scene {
     this.load.image('joystick-thumb', 'assets/joystick/LargeHandleFilledGrey.png');
 
     //TEXTURES
-    this.load.image('modal-bg', 'assets/textures/Grey_background_59.png');
+    // this.load.image('modal-bg', 'assets/textures/Grey_background_59.png');
+    this.load.image('modal-bg', 'assets/bg-texture-512.jpeg');
+
   }
 
   create() {

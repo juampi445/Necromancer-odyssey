@@ -11,14 +11,14 @@ export default class MainMenuScene extends Phaser.Scene {
     // Background texture
     this.add.tileSprite(width / 2, height / 2, width, height, 'modal-bg');
 
-    // Beige filter overlay
-    this.add.rectangle(width / 2, height / 2, width, height, 0x797562, 0.75);
+    this.add.rectangle(width / 2, height / 2, width, height, 0x222222, 0.75);
 
     // Title
     this.add.text(width / 2, 80, 'Main Menu', {
       fontSize: '36px',
-      color: '#333333',
-      fontStyle: 'bold'
+      color: '#f8f9fa', // a cool white
+      fontStyle: 'bold',
+      fontFamily: 'monospace',
     }).setOrigin(0.5);
 
     const buttonWidth = 240;

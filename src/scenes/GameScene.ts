@@ -124,7 +124,10 @@ export class GameScene extends Phaser.Scene {
     const tileWidth = !this.isTouchDevice ? window.innerWidth / 16 : window.innerWidth / 4;
     this.createTileGrid(bounds.width, bounds.height, tileWidth, 'brick_2');
     const mask = this.add.graphics();
-    mask.fillStyle(0x7b7554, 0.6);
+    // mask.fillStyle(0x7b7554, 0.6);
+    // mask.fillStyle(0x222222, 0.5);
+    mask.fillStyle(0x2d3246, 0.7); // deep bluish-grey, less brown, more neutral dungeon feel
+
     mask.fillRect(
         -window.innerWidth,
         -window.innerHeight,
