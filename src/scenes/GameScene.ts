@@ -11,6 +11,7 @@ import GreenSkeleton from '@/GameObjects/GreenSkeleton';
 import Mushroom from '@/GameObjects/Mushroom';
 import Enemy from '@/GameObjects/Enemy';
 import Coin from '@/GameObjects/Coin';
+import { GlobalDataSingleton } from '@/data/GlobalDataSingleton';
 // import GreenSkeleton from '@/GameObjects/GreenSkeleton';
 
 export class GameScene extends Phaser.Scene {
@@ -36,6 +37,14 @@ export class GameScene extends Phaser.Scene {
 
   constructor() {
     super({ key: 'GameScene' });
+  }
+
+  init() {
+    this.cameras.main.setBackgroundColor(0x7b7554);
+    this.canWin = true;
+    this.enemiesSpawnedCount = 0;
+    this.totalCoins = GlobalDataSingleton.instance.coins || 0;
+    console.log('GameScene initialized with total coins:', this.totalCoins);
   }
 
   create() {
@@ -97,6 +106,12 @@ export class GameScene extends Phaser.Scene {
     });
     this.cameras.main.startFollow(this.player, false, 0.5, 0.5);
     this.setupColliders();
+
+    this.game.events.on('update-coins', (totalCoins: number) => {
+      this.totalCoins = totalCoins;
+      GlobalDataSingleton.instance.coins = totalCoins;
+      console.log('Total coins updated:', totalCoins);
+    });
 
     this.game.events.on('game-over', () => {
       this.spawnTimer?.remove(false);

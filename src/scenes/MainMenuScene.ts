@@ -1,3 +1,5 @@
+import { GlobalDataSingleton } from "@/data/GlobalDataSingleton";
+
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
     super('MainMenuScene');
@@ -47,6 +49,14 @@ export default class MainMenuScene extends Phaser.Scene {
       align: 'center'
     }).setOrigin(0.5).setInteractive().on('pointerdown', () => {
       this.scene.start('ShopScene');
+    });
+
+    window.addEventListener('beforeunload', () => {
+      GlobalDataSingleton.instance.save();
+    });
+
+    this.game.events.on(Phaser.Core.Events.BLUR, () => {
+      GlobalDataSingleton.instance.save();
     });
   }
 }

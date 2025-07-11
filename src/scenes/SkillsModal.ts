@@ -15,6 +15,7 @@ export default class SkillsModal extends Phaser.Scene {
     private skills: Skill[] = [];
     private playerSkills: PlayerSkill[] = [];
     private onSelect!: OnSelect;
+    private isTouchDevice: boolean = false;
 
     constructor() {
         super({ key: 'SkillsModal' });
@@ -27,11 +28,12 @@ export default class SkillsModal extends Phaser.Scene {
     }
 
     create() {
+        this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         const { width, height } = this.scale;
-
+        console.log('SkillsModal created with skills:', this.isTouchDevice ? 'Touch device' : 'Non-touch device', this.skills);
         // Smaller modal size
-        const modalWidth = width * 0.6;
-        const modalHeight = height * 0.6;
+        const modalWidth = width * (!this.isTouchDevice ? 0.6 : 0.9);
+        const modalHeight = height * (!this.isTouchDevice ? 0.7 : 0.8);
 
         const container = this.add.container(width / 2, height / 2);
 
@@ -51,7 +53,7 @@ export default class SkillsModal extends Phaser.Scene {
         }).setOrigin(0.5);
         container.add(title);
 
-        const btnHeight = (modalHeight - 120) / 4;
+        const btnHeight = (modalHeight - 100) / 4;
         const btnWidth = modalWidth * 0.85;
         const spacing = 12;
 
@@ -62,7 +64,7 @@ export default class SkillsModal extends Phaser.Scene {
             const canUpgrade = hasSkill && level < skill.maxLevel;
             const canUnlock = !hasSkill;
 
-            const y = -modalHeight / 2 + 90 + i * (btnHeight + spacing);
+            const y = -modalHeight / 2 + 90 + (this.isTouchDevice ? 40 : 0) + i * (btnHeight + spacing);
             const btn = this.add.container(0, y);
 
             const bgRect = this.add.graphics();
@@ -72,12 +74,11 @@ export default class SkillsModal extends Phaser.Scene {
             bgRect.strokeRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, 12);
             bgRect.setInteractive(new Phaser.Geom.Rectangle(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight), Phaser.Geom.Rectangle.Contains);
 
-            const iconSize = btnHeight * 0.7;
-            const icon = this.add.sprite(-btnWidth / 2 + iconSize / 2 + 15, 0, skill.texture.key)
-                .setDisplaySize(iconSize, iconSize)
-                .setOrigin(0.5);
+            const iconSize = btnHeight * (this.isTouchDevice ? 0.5 : 0.6);
+            const icon = this.add.sprite(-btnWidth / 2 + 10 + (iconSize / 2), -btnHeight / 2 + 10 + (iconSize / 2), skill.texture.key)
+                .setDisplaySize(iconSize, iconSize);
 
-            const titleText = this.add.text(-btnWidth / 2 + iconSize + 30, -14, skill.type, {
+            const titleText = this.add.text(-btnWidth / 2 + iconSize + 40, -btnHeight / 2 + 10, skill.type, {
                 fontSize: '18px',
                 color: '#ffffff',
             });
@@ -90,10 +91,15 @@ export default class SkillsModal extends Phaser.Scene {
                 if (canUpgrade) label += ' - Upgrade';
             }
 
-            const labelText = this.add.text(-btnWidth / 2 + iconSize + 30, 10, label, {
-                fontSize: '14px',
-                color: canUpgrade || canUnlock ? '#0f0' : '#888',
-            });
+            const labelText = this.add.text(
+                -btnWidth / 2 + 10, // x: align with titleText
+                btnHeight / 2 - 10,             // y: near bottom of button
+                label,
+                {
+                    fontSize: this.isTouchDevice ? '20px' : '16px',
+                    color: canUpgrade || canUnlock ? '#0f0' : '#888',
+                }
+            ).setOrigin(0, 1);
 
             btn.add([bgRect, icon, titleText, labelText]);
             container.add(btn);

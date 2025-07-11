@@ -71,7 +71,6 @@ class Coin extends Phaser.Physics.Arcade.Sprite {
         if (scene.game && this.collected === false) {
             this.collected = true;
             scene.game.events.emit('update-coins', scene.totalCoins + this.value);
-            scene.totalCoins += this.value;
             this.destroy();
         }
     }

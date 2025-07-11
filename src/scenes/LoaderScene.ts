@@ -1,3 +1,4 @@
+import { GlobalDataSingleton } from '@/data/GlobalDataSingleton';
 import * as Phaser from 'phaser';
 
 class LoaderScene extends Phaser.Scene {
@@ -32,6 +33,9 @@ class LoaderScene extends Phaser.Scene {
       progressBox.destroy();
       loadingText.destroy();
     });
+
+    const globalData = GlobalDataSingleton.instance;
+    console.log('GlobalDataSingleton instance:', globalData);
 
     //MAP
     this.load.image('brick_1', '/assets/brickwall_.jpg');
