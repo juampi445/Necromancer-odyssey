@@ -1,6 +1,8 @@
 import { GlobalDataSingleton } from "@/data/GlobalDataSingleton";
 
 export default class MainMenuScene extends Phaser.Scene {
+  private confirmContainer?: Phaser.GameObjects.Container;
+
   constructor() {
     super('MainMenuScene');
   }
@@ -11,7 +13,7 @@ export default class MainMenuScene extends Phaser.Scene {
     // Background texture
     this.add.tileSprite(width / 2, height / 2, width, height, 'modal-bg');
 
-    this.add.rectangle(width / 2, height / 2, width, height, 0x222222, 0.75);
+    this.add.rectangle(width / 2, height / 2, width, height, 0x0b1a2b, 0.75);
 
     // Title
     this.add.text(width / 2, 80, 'Main Menu', {
@@ -22,7 +24,6 @@ export default class MainMenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     const buttonWidth = 240;
-    // const buttonHeight = 50;
     const buttonFont = '22px';
     const buttonPadding = { x: 20, y: 10 };
 
@@ -50,6 +51,18 @@ export default class MainMenuScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive().on('pointerdown', () => {
       this.scene.start('ShopScene');
     });
+    // Reset button (red)
+    const resetButton = this.add.text(width / 2, 400, 'Reset Progress', {
+      fontSize: buttonFont,
+      color: '#ffffff',
+      backgroundColor: '#dc3545', // bootstrap danger red
+      padding: buttonPadding,
+      fixedWidth: buttonWidth,
+      align: 'center',
+    }).setOrigin(0.5).setInteractive().on('pointerdown', () => {
+      this.showConfirmModal();
+    });
+    console.log('MainMenuScene created reset button:', resetButton);
 
     window.addEventListener('beforeunload', () => {
       GlobalDataSingleton.instance.save();
@@ -58,5 +71,59 @@ export default class MainMenuScene extends Phaser.Scene {
     this.game.events.on(Phaser.Core.Events.BLUR, () => {
       GlobalDataSingleton.instance.save();
     });
+  }
+
+  private showConfirmModal() {
+    const { width, height } = this.scale;
+
+    // Si ya hay un modal abierto, no hacer nada
+    if (this.confirmContainer) return;
+
+    // Fondo semitransparente
+    const bg = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.7);
+    
+    // Caja blanca pequeña
+    const boxWidth = 360;
+    const boxHeight = 180;
+    const box = this.add.rectangle(width / 2, height / 2, boxWidth, boxHeight, 0xffffff, 1).setStrokeStyle(2, 0x000000);
+
+    // Texto de confirmación
+    const text = this.add.text(width / 2, height / 2 - 40, 'Are you sure you want to reset all progress?', {
+      fontSize: '20px',
+      color: '#000000',
+      wordWrap: { width: boxWidth - 40 },
+      align: 'center',
+    }).setOrigin(0.5);
+
+    // Botón Yes
+    const yesButton = this.add.text(width / 2 - 70, height / 2 + 50, 'Yes', {
+      fontSize: '22px',
+      color: '#ffffff',
+      backgroundColor: '#28a745',
+      padding: { x: 20, y: 10 },
+      fixedWidth: 100,
+      align: 'center',
+    }).setOrigin(0.5).setInteractive().on('pointerdown', () => {
+      GlobalDataSingleton.instance.reset();
+      GlobalDataSingleton.instance.save();
+      this.confirmContainer?.destroy();
+      this.confirmContainer = undefined;
+      this.scene.restart();
+    });
+
+    // Botón No
+    const noButton = this.add.text(width / 2 + 70, height / 2 + 50, 'No', {
+      fontSize: '22px',
+      color: '#ffffff',
+      backgroundColor: '#dc3545',
+      padding: { x: 20, y: 10 },
+      fixedWidth: 100,
+      align: 'center',
+    }).setOrigin(0.5).setInteractive().on('pointerdown', () => {
+      this.confirmContainer?.destroy();
+      this.confirmContainer = undefined;
+    });
+
+    this.confirmContainer = this.add.container(0, 0, [bg, box, text, yesButton, noButton]);
   }
 }

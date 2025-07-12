@@ -101,6 +101,10 @@ class LoaderScene extends Phaser.Scene {
     // this.load.image('modal-bg', 'assets/textures/Grey_background_59.png');
     this.load.image('modal-bg', 'assets/bg-texture-512.jpeg');
 
+    //SHOP ITEMS
+    this.load.image('sword', 'assets/icons/64x64/fc1455.png');
+    this.load.image('shield', 'assets/icons/64x64/fc665.png');
+    this.load.image('boots', 'assets/icons/64x64/fc667.png');
   }
 
   create() {

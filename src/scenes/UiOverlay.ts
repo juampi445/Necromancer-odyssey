@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import Skill from '../GameObjects/Skill';
 import SkillsModal from '@/scenes/SkillsModal';
 import GameScene from './GameScene';
+import { GlobalDataSingleton } from '@/data/GlobalDataSingleton';
 
 class UIOverlay extends Phaser.Scene {
     private healthBar!: Phaser.GameObjects.Graphics;
@@ -28,9 +29,9 @@ class UIOverlay extends Phaser.Scene {
     }
 
     init() {
-        this.playerHealth = 100;
         this.experience = 0;
         this.level = 1;
+        this.playerHealth = GlobalDataSingleton.instance.calculateStats().health;
     }
 
     create() {
@@ -123,7 +124,7 @@ class UIOverlay extends Phaser.Scene {
         const x = camera.scrollX + 20;
         const y = camera.scrollY + 10;
 
-        const ratio = Phaser.Math.Clamp(this.playerHealth / 100, 0, 1);
+        const ratio = Phaser.Math.Clamp(this.playerHealth / GlobalDataSingleton.instance.calculateStats().health, 0, 1);
 
         this.healthBar.clear();
         this.healthBar.fillStyle(0x880000);
@@ -136,7 +137,7 @@ class UIOverlay extends Phaser.Scene {
 
         if (!this.isTouchDevice) {
             const healthText = this.playerHealth > 0 ? this.playerHealth : 0;
-            this.healthText.setText(`HP: ${healthText} / 100`);
+            this.healthText.setText(`HP: ${healthText} / ${GlobalDataSingleton.instance.calculateStats().health}`);
             this.healthText.setPosition(x + 10, y + 2);
         } else {
             this.healthText.setText('');

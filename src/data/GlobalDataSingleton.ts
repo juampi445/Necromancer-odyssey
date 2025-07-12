@@ -1,6 +1,9 @@
 interface ItemData {
   id: string;
   level: number;
+  baseValue: number;
+  increment: number;
+  statKey: string;
 }
 
 interface GlobalDataType {
@@ -14,10 +17,16 @@ export class GlobalDataSingleton {
   private data: GlobalDataType = {
     coins: 0,
     items: {
-      sword: { id: "sword", level: 0 },
-      shield: { id: "shield", level: 0 },
-      boots: { id: "boots", level: 0 },
+      sword: { id: "sword", level: 0, baseValue: 5, increment: 5, statKey: "damage" },
+      shield: { id: "shield", level: 0, baseValue: 100, increment: 5, statKey: "health" },
+      boots: { id: "boots", level: 0, baseValue: 100, increment: 5, statKey: "speed" },
     },
+  };
+
+  private baseStats = {
+    health: 100,
+    damage: 5,
+    speed: 100,
   };
 
   private constructor() {
@@ -49,25 +58,22 @@ export class GlobalDataSingleton {
 
   upgradeItem(id: string) {
     if (!this.data.items[id]) {
-      this.data.items[id] = { id, level: 0 };
+      this.data.items[id] = { id, level: 0, baseValue: 0, increment: 0, statKey: "" };
     }
     this.data.items[id].level++;
   }
 
   calculateStats() {
     const { sword, shield, boots } = this.data.items;
-
-    const baseStats = {
-      health: 100,
-      damage: 10,
-      speed: 5,
-    };
-
     return {
-      health: baseStats.health + (shield?.level ?? 0) * 20,
-      damage: baseStats.damage + (sword?.level ?? 0) * 5,
-      speed: baseStats.speed + (boots?.level ?? 0) * 0.5,
+      health: shield.baseValue + (shield?.level ?? 0) * shield.increment,
+      damage: sword.baseValue + (sword?.level ?? 0) * sword.increment,
+      speed: boots.baseValue + (boots?.level ?? 0) * boots.increment,
     };
+  }
+
+  returnData() {
+    return this.data;
   }
 
   save() {
@@ -83,6 +89,7 @@ export class GlobalDataSingleton {
           coins: parsed.coins ?? 0,
           items: parsed.items ?? {},
         };
+        this.ensureDefaultItems();
       } catch (e) {
         console.warn("Error loading saved data:", e);
       }
@@ -95,5 +102,20 @@ export class GlobalDataSingleton {
       coins: 0,
       items: {},
     };
+    this.ensureDefaultItems();
+  }
+
+  private ensureDefaultItems() {
+    const defaults: Record<string, ItemData> = {
+      sword: { id: "sword", level: 0, baseValue: 5, increment: 5, statKey: "damage" },
+      shield: { id: "shield", level: 0, baseValue: 100, increment: 5, statKey: "health" },
+      boots: { id: "boots", level: 0, baseValue: 100, increment: 5, statKey: "speed" },
+    };
+
+    for (const key in defaults) {
+      if (!this.data.items[key]) {
+        this.data.items[key] = defaults[key];
+      }
+    }
   }
 }
